@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "game_id": "game_0004",
+    "code_name": "MG-0004",
+    "title_kr": "카페 매치 타이쿤",
+    "title_en": "Cafe Match Tycoon",
+    "version": "0.1.0",
+    "last_updated": "2025-01-01"
+  },
+  "overview": {
+    "genre_tags": ["match3", "simulation", "idle"],
+    "target_audience": {
+      "age": "15-35",
+      "region": ["KR", "SEA"],
+      "play_style": "casual"
+    },
+    "core_loop": "매치3 퍼즐로 재료를 수집하고, 카페를 운영하며, 방치 수익으로 카페를 확장한다",
+    "unique_selling_point": "매치3 퍼즐과 카페 경영의 조화"
+  },
+  "gameplay": {
+    "core_mechanics": [
+      {
+        "name": "매치3 퍼즐",
+        "description": "매치3 퍼즐을 풀어 재료와 자원 획득"
+      },
+      {
+        "name": "카페 경영",
+        "description": "메뉴 개발, 직원 고용, 인테리어 배치"
+      },
+      {
+        "name": "방치 수익",
+        "description": "오프라인 시간 동안 카페에서 자동으로 수익 발생"
+      }
+    ],
+    "progression": {
+      "type": "cafe_expansion",
+      "description": "카페 레벨과 메뉴 확장으로 진행"
+    },
+    "session_length": "5-10분"
+  },
+  "economy": {
+    "currencies": [
+      {
+        "name": "골드",
+        "type": "soft",
+        "sources": ["카페 수익", "퍼즐 클리어", "방치 수익"],
+        "sinks": ["메뉴 개발", "인테리어 구매", "직원 고용"]
+      },
+      {
+        "name": "보석",
+        "type": "hard",
+        "sources": ["인앱 구매", "업적", "이벤트"],
+        "sinks": ["프리미엄 인테리어", "특별 메뉴", "골드 구매"]
+      }
+    ],
+    "monetization": {
+      "model": "F2P + IAP",
+      "iap_items": ["보석 패키지", "월정액", "스타터 팩"],
+      "ad_placements": ["보상형 광고 (수익 2배, 재료 2배)", "인터스티셜 (퍼즐 클리어 후)"]
+    }
+  },
+  "technical": {
+    "platform": ["Android", "iOS"],
+    "engine": "Flutter + Flame",
+    "backend": "Firebase",
+    "analytics": "GA4 + BigQuery"
+  }
+}
