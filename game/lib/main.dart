@@ -6,10 +6,13 @@ import 'package:flame/game.dart';
 import 'game/logic/cafe_manager.dart';
 import 'game/logic/idle_income_manager.dart';
 import 'game/match3_game.dart';
+import 'game/models/stage.dart';
+import 'game/models/customer.dart';
 import 'package:mg_common_game/core/audio/audio_manager.dart';
 import 'package:mg_common_game/core/ui/theme/app_colors.dart';
 import 'ui/dialogs/offline_reward_dialog.dart';
 import 'ui/overlays/tutorial_overlay.dart';
+import 'ui/screens/home_screen.dart';
 import 'package:mg_common_game/systems/progression/progression_manager.dart';
 import 'package:mg_common_game/systems/progression/upgrade_manager.dart';
 import 'package:mg_common_game/systems/progression/achievement_manager.dart';
@@ -44,6 +47,8 @@ Future<void> _setupDI() async {
 
   GetIt.I.registerSingleton<CafeManager>(CafeManager(goldManager: goldManager));
   GetIt.I.registerSingleton<IdleIncomeManager>(IdleIncomeManager());
+  GetIt.I.registerSingleton<StageManager>(StageManager());
+  GetIt.I.registerSingleton<CustomerManager>(CustomerManager());
 
   // -- Meta Progression Registration --
 
@@ -371,7 +376,7 @@ class CafeMatchApp extends StatelessWidget {
     return MaterialApp(
       title: 'Cafe Match Tycoon',
       theme: GameTheme.darkTheme,
-      home: const CafeMatchScreen(),
+      home: const HomeScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
