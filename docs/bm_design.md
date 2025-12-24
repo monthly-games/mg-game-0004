@@ -1,7 +1,13 @@
-# 카페 매치 타이쿤 - BM 설계 문서
+﻿# 카페 매치 타이쿤 - BM 설계 문서
 
 > game_id: game_0004
 > repo: mg-game-0004
+> title_kr: 카페 매치 타이쿤
+> title_en: Cafe Match Tycoon
+> genre_tags: match3, simulation, idle
+> doc_type: bm_design
+> source_of_truth: docs/design/gdd_game_0004.json
+> last_updated: 2025-12-19
 
 ---
 
