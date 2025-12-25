@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/ui/mg_ui.dart';
 import '../../game/match3_game.dart';
 import '../../game/models/stage.dart';
-import '../hud/mg_puzzle_hud.dart';
 
 class GameScreen extends StatefulWidget {
   final Stage stage;

@@ -119,7 +119,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
           _buildStatItem(
             icon: Icons.star,
             label: 'Rating',
-            value: '${_customerManager.averageRating.toStringAsFixed(1)}',
+            value: _customerManager.averageRating.toStringAsFixed(1),
             color: Colors.amber,
           ),
           _buildStatItem(
