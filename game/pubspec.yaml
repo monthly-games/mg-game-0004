@@ -34,7 +34,7 @@ dependencies:
 
   # Core Game Logic
   mg_common_game:
-    path: ../../mg-common-game
+    path: ../libs/mg_common_game
   
   # Engine
   flame: ^1.14.0
