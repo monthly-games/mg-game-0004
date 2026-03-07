@@ -158,7 +158,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
         Text(
           label,
           style: MGTextStyles.caption.copyWith(
-            color: MGColors.textSecondary,
+            color: AppColors.textMediumEmphasis,
           ),
         ),
       ],
@@ -170,7 +170,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
       margin: EdgeInsets.symmetric(horizontal: MGSpacing.sm),
       padding: EdgeInsets.all(MGSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -225,7 +225,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
       margin: EdgeInsets.only(right: MGSpacing.sm),
       padding: EdgeInsets.all(MGSpacing.sm),
       decoration: BoxDecoration(
-        color: _getMoodColor(customer.mood).withOpacity(0.1),
+        color: _getMoodColor(customer.mood).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _getMoodColor(customer.mood)),
       ),

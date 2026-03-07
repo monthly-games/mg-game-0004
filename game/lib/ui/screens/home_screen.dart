@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              MGColors.primary.withOpacity(0.8),
+              MGColors.primary.withValues(alpha: 0.8),
               MGColors.surface,
             ],
           ),

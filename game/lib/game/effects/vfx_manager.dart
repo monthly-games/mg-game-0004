@@ -283,7 +283,7 @@ class VfxManager extends Component with HasGameRef {
                 canvas.drawCircle(
                   Offset.zero,
                   size,
-                  Paint()..color = color.withOpacity(opacity),
+                  Paint()..color = color.withValues(alpha: opacity),
                 );
               },
             ),
@@ -321,7 +321,7 @@ class VfxManager extends Component with HasGameRef {
                 canvas.drawCircle(
                   Offset.zero,
                   size,
-                  Paint()..color = color.withOpacity(opacity),
+                  Paint()..color = color.withValues(alpha: opacity),
                 );
               },
             ),
@@ -358,7 +358,7 @@ class VfxManager extends Component with HasGameRef {
                 canvas.drawCircle(
                   Offset.zero,
                   3,
-                  Paint()..color = color.withOpacity(opacity),
+                  Paint()..color = color.withValues(alpha: opacity),
                 );
               },
             ),
@@ -407,7 +407,7 @@ class VfxManager extends Component with HasGameRef {
 
                 canvas.drawPath(
                   path,
-                  Paint()..color = color.withOpacity(opacity),
+                  Paint()..color = color.withValues(alpha: opacity),
                 );
               },
             ),
@@ -442,7 +442,7 @@ class VfxManager extends Component with HasGameRef {
                 canvas.drawCircle(
                   Offset.zero,
                   3,
-                  Paint()..color = color.withOpacity(opacity),
+                  Paint()..color = color.withValues(alpha: opacity),
                 );
               },
             ),
@@ -476,7 +476,7 @@ class VfxManager extends Component with HasGameRef {
 
                 canvas.drawPath(
                   path,
-                  Paint()..color = Colors.pink.withOpacity(opacity),
+                  Paint()..color = Colors.pink.withValues(alpha: opacity),
                 );
               },
             ),
@@ -514,7 +514,7 @@ class VfxManager extends Component with HasGameRef {
                 canvas.drawCircle(
                   Offset.zero,
                   size,
-                  Paint()..color = color.withOpacity(opacity),
+                  Paint()..color = color.withValues(alpha: opacity),
                 );
               },
             ),
@@ -551,7 +551,7 @@ class VfxManager extends Component with HasGameRef {
 
                 canvas.drawOval(
                   const Rect.fromLTWH(-3, -2, 6, 4),
-                  Paint()..color = Colors.amber.withOpacity(opacity),
+                  Paint()..color = Colors.amber.withValues(alpha: opacity),
                 );
 
                 canvas.restore();
@@ -582,7 +582,7 @@ class VfxManager extends Component with HasGameRef {
                 Offset(position.x, position.y),
                 radius,
                 Paint()
-                  ..color = color.withOpacity(opacity * 0.4)
+                  ..color = color.withValues(alpha: opacity * 0.4)
                   ..style = PaintingStyle.stroke
                   ..strokeWidth = 2,
               );
@@ -622,7 +622,7 @@ class _SwapArrow extends PositionComponent {
   @override
   void render(Canvas canvas) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.8)
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
@@ -650,7 +650,7 @@ class _SwapArrow extends PositionComponent {
     );
     path.close();
 
-    canvas.drawPath(path, Paint()..color = Colors.white.withOpacity(0.8));
+    canvas.drawPath(path, Paint()..color = Colors.white.withValues(alpha: 0.8));
   }
 }
 

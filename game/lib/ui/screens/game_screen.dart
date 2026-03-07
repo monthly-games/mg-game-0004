@@ -115,8 +115,8 @@ class _GameScreenState extends State<GameScreen> {
                   padding: EdgeInsets.all(MGSpacing.xs),
                   decoration: BoxDecoration(
                     color: goal.isCompleted
-                        ? Colors.green.withOpacity(0.3)
-                        : Colors.white.withOpacity(0.1),
+                        ? Colors.green.withValues(alpha: 0.3)
+                        : Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: goal.isCompleted ? Colors.green : Colors.white30,
