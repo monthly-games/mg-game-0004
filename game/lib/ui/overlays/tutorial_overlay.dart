@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 
 class TutorialOverlay extends StatefulWidget {
   final VoidCallback onComplete;
@@ -124,7 +125,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                       style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: MGColors.textHighEmphasis,
                       ),
                       textAlign: TextAlign.center,
                     ),

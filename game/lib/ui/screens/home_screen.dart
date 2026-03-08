@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(width: MGSpacing.xs),
                 Text(
                   '${_stageManager.totalStars}',
-                  style: MGTextStyles.hud.copyWith(color: Colors.white),
+                  style: MGTextStyles.hud.copyWith(color: MGColors.textHighEmphasis),
                 ),
               ],
             ),
@@ -217,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Text(
                   'My Cozy Cafe',
-                  style: MGTextStyles.title.copyWith(color: Colors.white),
+                  style: MGTextStyles.title.copyWith(color: MGColors.textHighEmphasis),
                 ),
               ),
             ),
@@ -242,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(width: 4),
                   Text(
                     'Lv.${_cafeManager.cafeReputationLevel}',
-                    style: MGTextStyles.caption.copyWith(color: Colors.white),
+                    style: MGTextStyles.caption.copyWith(color: MGColors.textHighEmphasis),
                   ),
                 ],
               ),
@@ -268,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(width: 4),
                   Text(
                     '4.8',
-                    style: MGTextStyles.caption.copyWith(color: Colors.white),
+                    style: MGTextStyles.caption.copyWith(color: MGColors.textHighEmphasis),
                   ),
                 ],
               ),
@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: Colors.white,
+          foregroundColor: MGColors.textHighEmphasis,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -307,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
               label,
               style: MGTextStyles.button.copyWith(
                 fontSize: 18,
-                color: Colors.white,
+                color: MGColors.textHighEmphasis,
               ),
             ),
           ],
@@ -369,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return ListTile(
               leading: Icon(
                 menu.isUnlocked ? Icons.coffee : Icons.lock,
-                color: menu.isUnlocked ? MGColors.primary : Colors.grey,
+                color: menu.isUnlocked ? MGColors.primary : MGColors.common,
               ),
               title: Text(menu.name),
               subtitle: Text('Price: ${menu.basePrice}G'),

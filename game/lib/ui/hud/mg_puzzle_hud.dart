@@ -45,7 +45,7 @@ class MGPuzzleHud extends StatelessWidget {
                     onPressed: onPause,
                     size: 44,
                     backgroundColor: Colors.black54,
-                    color: Colors.white,
+                    color: MGColors.textHighEmphasis,
                   )
                 else
                   const SizedBox(width: 44),
@@ -110,7 +110,7 @@ class MGPuzzleHud extends StatelessWidget {
           Text(
             _formatNumber(score),
             style: MGTextStyles.hudLarge.copyWith(
-              color: Colors.white,
+              color: MGColors.textHighEmphasis,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -138,14 +138,14 @@ class MGPuzzleHud extends StatelessWidget {
         children: [
           const Icon(
             Icons.swap_horiz,
-            color: Colors.white,
+            color: MGColors.textHighEmphasis,
             size: 20,
           ),
           MGSpacing.hXs,
           Text(
             'Moves: $moves',
             style: MGTextStyles.hud.copyWith(
-              color: Colors.white,
+              color: MGColors.textHighEmphasis,
               fontWeight: FontWeight.w600,
             ),
           ),

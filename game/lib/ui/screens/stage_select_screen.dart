@@ -26,7 +26,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
       appBar: AppBar(
         title: Text('Select Stage'),
         backgroundColor: MGColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: MGColors.textHighEmphasis,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -81,13 +81,13 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: isUnlocked
-              ? (isCurrent ? MGColors.primary : Colors.white)
+              ? (isCurrent ? MGColors.primary : MGColors.textHighEmphasis)
               : Colors.grey.shade300,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isCurrent
                 ? MGColors.primary
-                : (isUnlocked ? Colors.brown.shade300 : Colors.grey),
+                : (isUnlocked ? Colors.brown.shade300 : MGColors.common),
             width: isCurrent ? 3 : 1,
           ),
           boxShadow: isUnlocked
@@ -108,12 +108,12 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
               Text(
                 '${stage.id}',
                 style: MGTextStyles.title.copyWith(
-                  color: isCurrent ? Colors.white : MGColors.textPrimary,
+                  color: isCurrent ? MGColors.textHighEmphasis : MGColors.textPrimary,
                   fontSize: 24,
                 ),
               )
             else
-              Icon(Icons.lock, color: Colors.grey, size: 28),
+              Icon(Icons.lock, color: MGColors.common, size: 28),
 
             SizedBox(height: 4),
 

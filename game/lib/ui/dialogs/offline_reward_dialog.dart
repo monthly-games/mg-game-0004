@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cafe_match_tycoon/game/logic/idle_income_manager.dart';
+import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 
 /// 오프라인 보상 다이얼로그
 class OfflineRewardDialog extends StatelessWidget {
@@ -38,7 +39,7 @@ class OfflineRewardDialog extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: MGColors.textHighEmphasis,
               ),
             ),
             const SizedBox(height: 8),
@@ -63,7 +64,7 @@ class OfflineRewardDialog extends StatelessWidget {
                 color: Colors.black26,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFFFFD700),
+                  color: MGColors.gold,
                   width: 2,
                 ),
               ),
@@ -71,7 +72,7 @@ class OfflineRewardDialog extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.stars,
-                    color: Color(0xFFFFD700),
+                    color: MGColors.gold,
                     size: 64,
                   ),
                   const SizedBox(height: 12),
@@ -80,7 +81,7 @@ class OfflineRewardDialog extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFFFD700),
+                      color: MGColors.gold,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -114,7 +115,7 @@ class OfflineRewardDialog extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFD700),
+                  backgroundColor: MGColors.gold,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

@@ -33,6 +33,7 @@ import 'package:mg_common_game/core/ui/screens/statistics_screen.dart';
 import 'package:mg_common_game/core/ui/overlays/pause_game_overlay.dart';
 import 'package:mg_common_game/core/ui/overlays/settings_game_overlay.dart';
 import 'ui/hud/mg_puzzle_hud.dart';
+import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -650,13 +651,13 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                         children: [
                           Icon(
                             _getIngredientIcon(entry.key),
-                            color: Colors.white,
+                            color: MGColors.textHighEmphasis,
                             size: 20,
                           ),
                           Text(
                             '${entry.value}',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: MGColors.textHighEmphasis,
                               fontSize: 12,
                             ),
                           ),
@@ -728,8 +729,8 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                                   menu.name,
                                   style: TextStyle(
                                     color: menu.isUnlocked
-                                        ? Colors.white
-                                        : Colors.grey,
+                                        ? MGColors.textHighEmphasis
+                                        : MGColors.common,
                                   ),
                                 ),
                                 subtitle: Text(
@@ -753,7 +754,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                                     : IconButton(
                                         icon: const Icon(
                                           Icons.lock_open,
-                                          color: Colors.grey,
+                                          color: MGColors.common,
                                         ),
                                         onPressed: () =>
                                             _cafeManager.unlockMenu(menu.id),
@@ -780,7 +781,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                             vertical: 10,
                           ),
                           backgroundColor: Colors.purple.shade700,
-                          foregroundColor: Colors.white,
+                          foregroundColor: MGColors.textHighEmphasis,
                         ),
                         onPressed: () => _showDailyQuestsScreen(context),
                         icon: const Icon(Icons.assignment_turned_in, size: 18),
@@ -829,7 +830,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                             vertical: 12,
                           ),
                           backgroundColor: Colors.grey.shade700,
-                          foregroundColor: Colors.white,
+                          foregroundColor: MGColors.textHighEmphasis,
                         ),
                         onPressed: () => _showSettingsScreen(context),
                         icon: const Icon(Icons.settings),
@@ -849,7 +850,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                             vertical: 12,
                           ),
                           backgroundColor: Colors.blue.shade700,
-                          foregroundColor: Colors.white,
+                          foregroundColor: MGColors.textHighEmphasis,
                         ),
                         onPressed: () => _showStatisticsScreen(context),
                         icon: const Icon(Icons.bar_chart),

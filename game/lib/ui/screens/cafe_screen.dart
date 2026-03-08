@@ -53,7 +53,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
       appBar: AppBar(
         title: Text('My Cafe'),
         backgroundColor: Colors.brown,
-        foregroundColor: Colors.white,
+        foregroundColor: MGColors.textHighEmphasis,
         actions: [
           Padding(
             padding: EdgeInsets.only(right: MGSpacing.md),
@@ -103,7 +103,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
       margin: EdgeInsets.all(MGSpacing.sm),
       padding: EdgeInsets.all(MGSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: MGColors.textHighEmphasis,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -170,7 +170,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
       margin: EdgeInsets.symmetric(horizontal: MGSpacing.sm),
       padding: EdgeInsets.all(MGSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.8),
+        color: MGColors.textHighEmphasis.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -279,13 +279,13 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
   Color _getMoodColor(CustomerMood mood) {
     switch (mood) {
       case CustomerMood.happy:
-        return Colors.green;
+        return MGColors.success;
       case CustomerMood.neutral:
-        return Colors.orange;
+        return MGColors.warning;
       case CustomerMood.impatient:
         return Colors.deepOrange;
       case CustomerMood.angry:
-        return Colors.red;
+        return MGColors.error;
     }
   }
 
@@ -332,7 +332,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
       margin: EdgeInsets.all(MGSpacing.sm),
       padding: EdgeInsets.all(MGSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: MGColors.textHighEmphasis,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -387,7 +387,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
         color: menu.isUnlocked ? Colors.brown.shade50 : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: menu.isUnlocked ? Colors.brown.shade200 : Colors.grey,
+          color: menu.isUnlocked ? Colors.brown.shade200 : MGColors.common,
         ),
       ),
       child: Row(
@@ -395,7 +395,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
           // Icon
           Icon(
             Icons.coffee,
-            color: menu.isUnlocked ? Colors.brown : Colors.grey,
+            color: menu.isUnlocked ? Colors.brown : MGColors.common,
           ),
           SizedBox(width: MGSpacing.sm),
 
@@ -408,7 +408,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
                   menu.name,
                   style: MGTextStyles.body.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: menu.isUnlocked ? null : Colors.grey,
+                    color: menu.isUnlocked ? null : MGColors.common,
                   ),
                 ),
                 Text(
@@ -437,7 +437,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: canCook ? MGColors.primary : Colors.grey,
+                backgroundColor: canCook ? MGColors.primary : MGColors.common,
               ),
               child: Text('Cook'),
             ),

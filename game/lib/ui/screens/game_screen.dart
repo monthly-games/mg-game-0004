@@ -69,13 +69,13 @@ class _GameScreenState extends State<GameScreen> {
                 onPressed: () => Navigator.pop(context),
                 size: 36,
                 backgroundColor: Colors.transparent,
-                color: Colors.white,
+                color: MGColors.textHighEmphasis,
               ),
               SizedBox(width: MGSpacing.sm),
               Expanded(
                 child: Text(
                   'Stage ${widget.stage.id}: ${widget.stage.name}',
-                  style: MGTextStyles.hud.copyWith(color: Colors.white),
+                  style: MGTextStyles.hud.copyWith(color: MGColors.textHighEmphasis),
                 ),
               ),
               Container(
@@ -84,17 +84,17 @@ class _GameScreenState extends State<GameScreen> {
                   vertical: MGSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.orange,
+                  color: MGColors.warning,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.swap_horiz, color: Colors.white, size: 18),
+                    Icon(Icons.swap_horiz, color: MGColors.textHighEmphasis, size: 18),
                     SizedBox(width: 4),
                     Text(
                       '${widget.stage.movesRemaining}',
                       style: MGTextStyles.hud.copyWith(
-                        color: Colors.white,
+                        color: MGColors.textHighEmphasis,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -115,11 +115,11 @@ class _GameScreenState extends State<GameScreen> {
                   padding: EdgeInsets.all(MGSpacing.xs),
                   decoration: BoxDecoration(
                     color: goal.isCompleted
-                        ? Colors.green.withValues(alpha: 0.3)
-                        : Colors.white.withValues(alpha: 0.1),
+                        ? MGColors.success.withValues(alpha: 0.3)
+                        : MGColors.textHighEmphasis.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: goal.isCompleted ? Colors.green : Colors.white30,
+                      color: goal.isCompleted ? MGColors.success : Colors.white30,
                     ),
                   ),
                   child: Column(
@@ -128,14 +128,14 @@ class _GameScreenState extends State<GameScreen> {
                         goal.isCompleted
                             ? Icons.check_circle
                             : _getGoalIcon(goal.type),
-                        color: goal.isCompleted ? Colors.green : Colors.white70,
+                        color: goal.isCompleted ? MGColors.success : Colors.white70,
                         size: 16,
                       ),
                       SizedBox(height: 2),
                       Text(
                         '${goal.currentAmount}/${goal.targetAmount}',
                         style: MGTextStyles.caption.copyWith(
-                          color: Colors.white,
+                          color: MGColors.textHighEmphasis,
                           fontSize: 10,
                         ),
                       ),
@@ -174,7 +174,7 @@ class _GameScreenState extends State<GameScreen> {
           margin: EdgeInsets.all(MGSpacing.xl),
           padding: EdgeInsets.all(MGSpacing.lg),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: MGColors.textHighEmphasis,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
@@ -184,7 +184,7 @@ class _GameScreenState extends State<GameScreen> {
               Icon(
                 isWin ? Icons.celebration : Icons.sentiment_dissatisfied,
                 size: 64,
-                color: isWin ? MGColors.gold : Colors.grey,
+                color: isWin ? MGColors.gold : MGColors.common,
               ),
 
               SizedBox(height: MGSpacing.md),
@@ -193,7 +193,7 @@ class _GameScreenState extends State<GameScreen> {
               Text(
                 isWin ? 'Stage Clear!' : 'Try Again',
                 style: MGTextStyles.display.copyWith(
-                  color: isWin ? MGColors.success : Colors.grey,
+                  color: isWin ? MGColors.success : MGColors.common,
                 ),
               ),
 
@@ -229,7 +229,7 @@ class _GameScreenState extends State<GameScreen> {
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
+                      backgroundColor: MGColors.common,
                     ),
                     child: Text('Home'),
                   ),
