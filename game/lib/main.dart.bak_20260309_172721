@@ -995,7 +995,6 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                 _game.overlays.add('PauseGame');
               },
               onHint: null, // 힌트 기능 구현시 연결
-              onDailyHub: () => Navigator.of(context).pushNamed('/daily-hub'),
             );
           },
         ),
