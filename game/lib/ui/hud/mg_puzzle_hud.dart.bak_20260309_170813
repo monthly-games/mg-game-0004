@@ -10,7 +10,6 @@ class MGPuzzleHud extends StatelessWidget {
   final int? targetScore;
   final VoidCallback? onPause;
   final VoidCallback? onHint;
-  final VoidCallback? onDailyHub;
 
   const MGPuzzleHud({
     super.key,
@@ -20,7 +19,6 @@ class MGPuzzleHud extends StatelessWidget {
     this.targetScore,
     this.onPause,
     this.onHint,
-    this.onDailyHub,
   });
 
   @override
@@ -41,16 +39,6 @@ class MGPuzzleHud extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // 일시정지 버튼
-        if (onDailyHub != null)
-          MGIconButton(
-            icon: Icons.calendar_today,
-            onPressed: onDailyHub,
-            size: 44,
-            backgroundColor: MGColors.info.withValues(alpha: 0.8),
-            color: MGColors.textHighEmphasis,
-            tooltip: 'Daily Hub',
-          ),
-        MGSpacing.hXs,
                 if (onPause != null)
                   MGIconButton(
                     icon: Icons.pause,
