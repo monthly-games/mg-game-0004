@@ -38,6 +38,7 @@ dependencies:
   
   # Engine
   flame: ^1.14.0
+  flame_spine: ^0.3.0+1
   
   # Architecture
   get_it: ^9.2.0
@@ -77,6 +78,7 @@ flutter:
   assets:
     - assets/images/
     - assets/audio/
+    - assets/spine/characters/
   # https://flutter.dev/to/resolution-aware-images
 
   # For details regarding adding assets from package dependencies, see
