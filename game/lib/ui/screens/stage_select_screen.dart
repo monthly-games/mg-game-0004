@@ -107,8 +107,8 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
             if (isUnlocked)
               Text(
                 '${stage.id}',
-                style: MGTextStyles.title.copyWith(
-                  color: isCurrent ? MGColors.textHighEmphasis : MGColors.textPrimary,
+                style: MGTextStyles.h2.copyWith(
+                  color: isCurrent ? MGColors.textHighEmphasis : MGColors.textHighEmphasis,
                   fontSize: 24,
                 ),
               )

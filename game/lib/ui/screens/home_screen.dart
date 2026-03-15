@@ -26,7 +26,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _cafeManager = GetIt.I<CafeManager>();
     _stageManager = GetIt.I<StageManager>();
 
-    _goldManager.addListener(_onUpdate);
     _cafeManager.addListener(_onUpdate);
   }
 
@@ -36,7 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _goldManager.removeListener(_onUpdate);
     _cafeManager.removeListener(_onUpdate);
     super.dispose();
   }
@@ -217,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Text(
                   'My Cozy Cafe',
-                  style: MGTextStyles.title.copyWith(color: MGColors.textHighEmphasis),
+                  style: MGTextStyles.h2.copyWith(color: MGColors.textHighEmphasis),
                 ),
               ),
             ),
@@ -326,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          foregroundColor: MGColors.textPrimary,
+          foregroundColor: MGColors.textHighEmphasis,
           side: BorderSide(color: MGColors.primary),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

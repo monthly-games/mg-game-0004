@@ -13,7 +13,7 @@ const kCafeOwnerMeta = SpineAssetMeta(
   path: 'spine/characters/cafe_owner',
   atlasPath: 'assets/spine/characters/cafe_owner/cafe_owner.atlas',
   skeletonPath:
-      'assets/spine/characters/cafe_owner/cafe_owner.skel',
+      'assets/spine/characters/cafe_owner/cafe_owner.json',
   animations: ['idle', 'walk', 'attack', 'hit'],
   defaultAnimation: 'idle',
   defaultMix: 0.2,
@@ -25,7 +25,7 @@ const kBaristaMeta = SpineAssetMeta(
   key: 'barista',
   path: 'spine/characters/barista',
   atlasPath: 'assets/spine/characters/barista/barista.atlas',
-  skeletonPath: 'assets/spine/characters/barista/barista.skel',
+  skeletonPath: 'assets/spine/characters/barista/barista.json',
   animations: ['idle', 'walk', 'attack', 'hit'],
   defaultAnimation: 'idle',
   defaultMix: 0.2,
@@ -39,7 +39,7 @@ const kPastryChefMeta = SpineAssetMeta(
   atlasPath:
       'assets/spine/characters/pastry_chef/pastry_chef.atlas',
   skeletonPath:
-      'assets/spine/characters/pastry_chef/pastry_chef.skel',
+      'assets/spine/characters/pastry_chef/pastry_chef.json',
   animations: ['idle', 'walk', 'attack', 'hit'],
   defaultAnimation: 'idle',
   defaultMix: 0.2,

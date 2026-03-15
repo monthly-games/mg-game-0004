@@ -1,49 +1,25 @@
+import 'package:mg_common_game/mg_common_game.dart' hide TutorialOverlay;
 import 'package:flutter/material.dart';
-import 'package:mg_common_game/core/ui/screens/seasonal_event_screen.dart';
-import 'package:mg_common_game/core/ui/screens/tournament_screen.dart';
-import 'package:mg_common_game/core/ui/screens/guild_war_screen.dart';
-import 'package:mg_common_game/systems/events/seasonal_content_manager.dart';
-import 'package:mg_common_game/systems/competitive/tournament_manager.dart';
-import 'package:mg_common_game/systems/social/guild_war_manager.dart';
-import 'package:mg_common_game/core/ui/screens/daily_hub_screen.dart';
-import 'package:mg_common_game/systems/retention/daily_challenge_manager.dart';
-import 'package:mg_common_game/systems/retention/streak_manager.dart';
-import 'package:mg_common_game/systems/retention/login_rewards_manager.dart';
-import 'package:flutter/foundation.dart';
-import 'package:mg_common_game/systems/systems.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/economy/gold_manager.dart';
-import 'package:mg_common_game/core/ui/theme/game_theme.dart';
 import 'package:flame/game.dart';
 import 'game/logic/cafe_manager.dart';
 import 'game/logic/idle_income_manager.dart';
 import 'game/match3_game.dart';
 import 'game/models/stage.dart';
 import 'game/models/customer.dart';
-import 'package:mg_common_game/core/audio/audio_manager.dart';
-import 'package:mg_common_game/core/ui/theme/app_colors.dart';
 import 'ui/dialogs/offline_reward_dialog.dart';
 import 'ui/overlays/tutorial_overlay.dart';
 import 'ui/screens/home_screen.dart';
-import 'package:mg_common_game/systems/progression/progression_manager.dart';
-import 'package:mg_common_game/systems/progression/upgrade_manager.dart';
-import 'package:mg_common_game/systems/progression/achievement_manager.dart';
-import 'package:mg_common_game/systems/progression/prestige_manager.dart';
 import 'package:mg_common_game/core/ui/screens/prestige_screen.dart';
-import 'package:mg_common_game/systems/quests/daily_quest.dart';
 import 'package:mg_common_game/core/ui/screens/daily_quest_screen.dart';
-import 'package:mg_common_game/systems/quests/weekly_challenge.dart';
 import 'package:mg_common_game/core/ui/screens/weekly_challenge_screen.dart';
-import 'package:mg_common_game/systems/settings/settings_manager.dart';
 import 'ui/screens/achievement_screen.dart';
 import 'package:mg_common_game/core/ui/screens/settings_screen.dart';
-import 'package:mg_common_game/core/systems/save_manager_helper.dart';
-import 'package:mg_common_game/systems/stats/statistics_manager.dart';
 import 'package:mg_common_game/core/ui/screens/statistics_screen.dart';
 import 'package:mg_common_game/core/ui/overlays/pause_game_overlay.dart';
 import 'package:mg_common_game/core/ui/overlays/settings_game_overlay.dart';
 import 'ui/hud/mg_puzzle_hud.dart';
-import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 import 'screens/collection_screen.dart';
 
 void main() async {
@@ -1033,16 +1009,13 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
               onHint: null, // 힌트 기능 구현시 연결
               onDailyHub: () => Navigator.of(context).pushNamed('/daily-hub'),
               onGuildWar: () {
-                game.pauseEngine();
-                Navigator.of(context).pushNamed('/guild-war').then((_) => game.resumeEngine());
+Navigator.of(context).pushNamed('/guild-war');
               },
               onTournament: () {
-                game.pauseEngine();
-                Navigator.of(context).pushNamed('/tournament').then((_) => game.resumeEngine());
+Navigator.of(context).pushNamed('/tournament');
               },
               onSeasonalEvent: () {
-                game.pauseEngine();
-                Navigator.of(context).pushNamed('/seasonal-event').then((_) => game.resumeEngine());
+Navigator.of(context).pushNamed('/seasonal-event');
               },
             );
           },
@@ -1073,7 +1046,7 @@ void _registerCollections() {
   final collection = GetIt.I<CollectionManager>();
 
   // Characters 컬렉션
-  collection.registerCollection(const Collection(
+  collection.registerCollection(Collection(
     id: 'characters',
     name: '캐릭터',
     description: '모든 캐릭터를 수집하세요',

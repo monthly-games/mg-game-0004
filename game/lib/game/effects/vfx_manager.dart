@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 /// VFX Manager for Cafe Match Tycoon (MG-0004)
 /// Match3 + Simulation 게임 전용 이펙트 관리자
-class VfxManager extends Component with HasGameRef {
+class VfxManager extends Component with HasGameReference {
   VfxManager();
 
   final Random _random = Random();
@@ -19,7 +19,7 @@ class VfxManager extends Component with HasGameRef {
   void showMatchClear(Vector2 position, Color tileColor, {int matchCount = 3}) {
     final intensity = (matchCount / 3).clamp(1.0, 2.0);
 
-    gameRef.add(
+    game.add(
       _createBurstEffect(
         position: position,
         color: tileColor,
@@ -33,15 +33,15 @@ class VfxManager extends Component with HasGameRef {
   /// 4매치 특수 효과
   void showMatch4(Vector2 position, Color tileColor) {
     // 라인 이펙트
-    gameRef.add(
+    game.add(
       _createLineEffect(position: position, color: tileColor, isHorizontal: true),
     );
-    gameRef.add(
+    game.add(
       _createLineEffect(position: position, color: tileColor, isHorizontal: false),
     );
 
     // 스파클
-    gameRef.add(
+    game.add(
       _createSparkleEffect(position: position, color: Colors.white, count: 15),
     );
   }
@@ -49,7 +49,7 @@ class VfxManager extends Component with HasGameRef {
   /// 5매치 폭발 효과
   void showMatch5(Vector2 position, Color tileColor) {
     // 큰 폭발
-    gameRef.add(
+    game.add(
       _createExplosionEffect(
         position: position,
         color: tileColor,
@@ -63,7 +63,7 @@ class VfxManager extends Component with HasGameRef {
     for (int i = 0; i < colors.length; i++) {
       Future.delayed(Duration(milliseconds: i * 50), () {
         if (!isMounted) return;
-        gameRef.add(
+        game.add(
           _createSparkleEffect(
             position: position,
             color: colors[i],
@@ -78,12 +78,12 @@ class VfxManager extends Component with HasGameRef {
 
   /// 콤보 표시
   void showCombo(Vector2 position, int comboCount) {
-    gameRef.add(
+    game.add(
       _ComboText(position: position, combo: comboCount),
     );
 
     if (comboCount >= 5) {
-      gameRef.add(
+      game.add(
         _createSparkleEffect(
           position: position,
           color: Colors.amber,
@@ -95,7 +95,7 @@ class VfxManager extends Component with HasGameRef {
 
   /// 타일 스왑 힌트
   void showSwapHint(Vector2 from, Vector2 to) {
-    gameRef.add(
+    game.add(
       _createSwapArrow(from: from, to: to),
     );
   }
@@ -109,7 +109,7 @@ class VfxManager extends Component with HasGameRef {
           (_random.nextDouble() - 0.5) * 150,
           (_random.nextDouble() - 0.5) * 150,
         );
-        gameRef.add(
+        game.add(
           _createSparkleEffect(
             position: centerPosition + offset,
             color: Colors.white,
@@ -126,14 +126,14 @@ class VfxManager extends Component with HasGameRef {
 
   /// 손님 입장
   void showCustomerEnter(Vector2 position) {
-    gameRef.add(
+    game.add(
       _createSparkleEffect(position: position, color: Colors.lightBlue, count: 8),
     );
   }
 
   /// 주문 완료
   void showOrderComplete(Vector2 position) {
-    gameRef.add(
+    game.add(
       _createRisingEffect(
         position: position,
         color: Colors.green,
@@ -152,7 +152,7 @@ class VfxManager extends Component with HasGameRef {
       for (int i = 0; i < 3; i++) {
         Future.delayed(Duration(milliseconds: i * 100), () {
           if (!isMounted) return;
-          gameRef.add(
+          game.add(
             _createHeartEffect(
               position: position + Vector2((_random.nextDouble() - 0.5) * 30, -20),
             ),
@@ -160,7 +160,7 @@ class VfxManager extends Component with HasGameRef {
         });
       }
     } else {
-      gameRef.add(
+      game.add(
         _createRisingEffect(
           position: position,
           color: Colors.pink.shade200,
@@ -173,14 +173,14 @@ class VfxManager extends Component with HasGameRef {
 
   /// 손님 불만족
   void showCustomerAngry(Vector2 position) {
-    gameRef.add(
+    game.add(
       _createSmokeEffect(position: position, count: 8, color: Colors.grey.shade600),
     );
   }
 
   /// 수익 획득
   void showMoneyGain(Vector2 position, int amount) {
-    gameRef.add(
+    game.add(
       _createCoinEffect(position: position, count: (amount / 50).clamp(3, 12).toInt()),
     );
 
@@ -189,11 +189,11 @@ class VfxManager extends Component with HasGameRef {
 
   /// 데코레이션 배치
   void showDecorationPlace(Vector2 position) {
-    gameRef.add(
+    game.add(
       _createSparkleEffect(position: position, color: Colors.amber, count: 12),
     );
 
-    gameRef.add(
+    game.add(
       _createGroundCircle(position: position, color: Colors.amber),
     );
   }
@@ -201,7 +201,7 @@ class VfxManager extends Component with HasGameRef {
   /// 업그레이드 완료
   void showUpgradeComplete(Vector2 position) {
     // 상승하는 별
-    gameRef.add(
+    game.add(
       _createRisingEffect(
         position: position,
         color: Colors.amber,
@@ -211,7 +211,7 @@ class VfxManager extends Component with HasGameRef {
     );
 
     // 폭발
-    gameRef.add(
+    game.add(
       _createExplosionEffect(
         position: position,
         color: Colors.yellow,
@@ -220,7 +220,7 @@ class VfxManager extends Component with HasGameRef {
       ),
     );
 
-    gameRef.add(
+    game.add(
       _UpgradeText(position: position),
     );
   }
@@ -230,14 +230,14 @@ class VfxManager extends Component with HasGameRef {
   // ============================================================
 
   void showNumberPopup(Vector2 position, String text, {Color color = Colors.white}) {
-    gameRef.add(
+    game.add(
       _NumberPopup(position: position, text: text, color: color),
     );
   }
 
   void _triggerScreenShake({double intensity = 5, double duration = 0.3}) {
-    if (gameRef.camera.viewfinder.children.isNotEmpty) {
-      gameRef.camera.viewfinder.add(
+    if (game.camera.viewfinder.children.isNotEmpty) {
+      game.camera.viewfinder.add(
         MoveByEffect(
           Vector2(intensity, 0),
           EffectController(

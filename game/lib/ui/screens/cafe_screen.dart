@@ -25,7 +25,6 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
     _customerManager = GetIt.I<CustomerManager>();
 
     _cafeManager.addListener(_onUpdate);
-    _goldManager.addListener(_onUpdate);
 
     // Spawn initial customer
     _customerManager.spawnCustomer(
@@ -43,7 +42,6 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _cafeManager.removeListener(_onUpdate);
-    _goldManager.removeListener(_onUpdate);
     super.dispose();
   }
 
@@ -151,8 +149,8 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
         SizedBox(height: 4),
         Text(
           value,
-          style: MGTextStyles.title.copyWith(
-            color: MGColors.textPrimary,
+          style: MGTextStyles.h2.copyWith(
+            color: MGColors.textHighEmphasis,
           ),
         ),
         Text(
@@ -180,7 +178,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
             children: [
               Icon(Icons.people, color: Colors.brown),
               SizedBox(width: MGSpacing.xs),
-              Text('Customers', style: MGTextStyles.subtitle),
+              Text('Customers', style: MGTextStyles.bodySmall),
               Spacer(),
               TextButton.icon(
                 onPressed: () {
@@ -342,7 +340,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
             children: [
               Icon(Icons.kitchen, color: Colors.brown),
               SizedBox(width: MGSpacing.xs),
-              Text('Kitchen', style: MGTextStyles.subtitle),
+              Text('Kitchen', style: MGTextStyles.bodySmall),
             ],
           ),
           SizedBox(height: MGSpacing.sm),

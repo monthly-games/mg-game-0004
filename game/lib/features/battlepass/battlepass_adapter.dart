@@ -98,6 +98,8 @@ class CafeBattlePass extends ChangeNotifier {
   int get currentExp => _manager.currentExp;
   double get levelProgress => _manager.levelProgress;
   bool get isPremium => _manager.isPremium;
+  List<BPMission> get dailyMissions => _manager.dailyMissions;
+  List<BPMission> get weeklyMissions => _manager.weeklyMissions;
 
   // === Actions ===
   void addExp(int amount) {

@@ -17,7 +17,7 @@ enum BlockType {
   rainbow, // Color clearer
 }
 
-class BlockEntity extends SpriteComponent with TapCallbacks, HasGameRef {
+class BlockEntity extends SpriteComponent with TapCallbacks, HasGameReference {
   final BlockType type;
   int gridX;
   int gridY;
@@ -65,7 +65,7 @@ class BlockEntity extends SpriteComponent with TapCallbacks, HasGameRef {
         spriteName = 'block_rainbow.png';
         break;
     }
-    sprite = await gameRef.loadSprite(spriteName);
+    sprite = await game.loadSprite(spriteName);
   }
 
   @override

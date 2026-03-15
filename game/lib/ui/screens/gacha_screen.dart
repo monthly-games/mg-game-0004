@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/ui/mg_ui.dart';
-import 'package:mg_common_game/systems/gacha/gacha_config.dart';
+import 'package:mg_common_game/systems/gacha/gacha_pool.dart';
 
 import '../../features/gacha/gacha_adapter.dart' as gacha_adapter;
 
@@ -25,7 +25,7 @@ class _GachaScreenState extends State<GachaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MGColors.background,
+      backgroundColor: MGColors.surface,
       appBar: AppBar(
         title: const Text('Gacha'),
         backgroundColor: MGColors.primary,
@@ -147,30 +147,30 @@ class _GachaScreenState extends State<GachaScreen> {
 
   Color _getRarityColor(GachaRarity rarity) {
     switch (rarity) {
-      case GachaRarity.ultraRare:
+      case GachaRarity.legendary:
         return MGColors.error;
-      case GachaRarity.superSuperRare:
+      case GachaRarity.ultraRare:
         return MGColors.warning;
       case GachaRarity.superRare:
         return MGColors.info;
       case GachaRarity.rare:
         return MGColors.success;
-      default:
-        return AppColors.textMediumEmphasis;
+      case GachaRarity.normal:
+        return MGColors.textMediumEmphasis;
     }
   }
 
   String _getRarityLabel(GachaRarity rarity) {
     switch (rarity) {
-      case GachaRarity.ultraRare:
+      case GachaRarity.legendary:
         return 'UR';
-      case GachaRarity.superSuperRare:
+      case GachaRarity.ultraRare:
         return 'SSR';
       case GachaRarity.superRare:
         return 'SR';
       case GachaRarity.rare:
         return 'R';
-      default:
+      case GachaRarity.normal:
         return 'N';
     }
   }

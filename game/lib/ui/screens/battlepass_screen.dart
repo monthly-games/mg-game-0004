@@ -24,7 +24,7 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MGColors.background,
+      backgroundColor: MGColors.surface,
       appBar: AppBar(
         title: const Text('Battle Pass'),
         backgroundColor: MGColors.primary,
