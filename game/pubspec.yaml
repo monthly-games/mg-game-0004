@@ -34,7 +34,7 @@ dependencies:
 
   # Core Game Logic
   mg_common_game:
-    path: ../../../repos/mg-common-game
+    path: ../../../libs/mg_common_game
   
   # Engine
   flame: ^1.14.0
@@ -51,8 +51,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  firebase_core: any
+  firebase_analytics: any
 dev_dependencies:
-  google_mobile_ads: ^5.2.0
   flutter_test:
     sdk: flutter
 
