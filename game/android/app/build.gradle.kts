@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.mg_games.cafe_match_tycoon"
+    namespace = "com.monthlygames.game0004"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.mg_games.cafe_match_tycoon"
+        applicationId = "com.monthlygames.game0004"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
