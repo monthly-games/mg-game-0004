@@ -4,6 +4,7 @@ import 'package:mg_common_game/core/ui/mg_ui.dart';
 import '../../game/match3_game.dart';
 import '../../game/models/stage.dart';
 
+
 class GameScreen extends StatefulWidget {
   final Stage stage;
 
@@ -90,7 +91,7 @@ class _GameScreenState extends State<GameScreen> {
                 child: Row(
                   children: [
                     Icon(Icons.swap_horiz, color: MGColors.textHighEmphasis, size: 18),
-                    SizedBox(width: 4),
+                    SizedBox(width: MGSpacing.xxs),
                     Text(
                       '${widget.stage.movesRemaining}',
                       style: MGTextStyles.hud.copyWith(
@@ -231,7 +232,7 @@ class _GameScreenState extends State<GameScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: MGColors.common,
                     ),
-                    child: Text('Home'),
+                    child: Text("Decoration"),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -248,7 +249,7 @@ class _GameScreenState extends State<GameScreen> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: MGColors.primary,
+                      backgroundColor: MGColors.primaryAction,
                     ),
                     child: Text(isWin ? 'Next' : 'Retry'),
                   ),

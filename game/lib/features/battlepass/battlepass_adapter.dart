@@ -93,6 +93,15 @@ class CafeBattlePass extends ChangeNotifier {
   }
 
   // === Getters ===
+  get claimedPremiumLevels => _manager.state?.claimedPremiumLevels ?? {};
+  get claimedFreeLevels => _manager.state?.claimedFreeLevels ?? {};
+  List<BPMission> get missions => [..._manager.dailyMissions, ..._manager.weeklyMissions];
+  get missionProgress => _manager.state?.missionProgress ?? {};
+  get expToNextLevel => _manager.expToNextLevel;
+  get remainingDays => _manager.currentSeason?.remainingDays ?? 0;
+  get tiers => _manager.currentSeason?.tiers ?? [];
+  get maxLevel => _manager.currentSeason?.maxLevel ?? 50;
+  get seasonName => _manager.currentSeason?.nameKr ?? '';
   BPSeasonConfig? get currentSeason => _manager.currentSeason;
   int get currentLevel => _manager.currentLevel;
   int get currentExp => _manager.currentExp;
@@ -131,6 +140,11 @@ class CafeBattlePass extends ChangeNotifier {
   Map<String, dynamic> toJson() => _manager.toJson();
   void loadFromJson(Map<String, dynamic> json) {
     _manager.loadFromJson(json);
+    notifyListeners();
+  }
+
+  void claimReward(int level, {required bool isPremium}) {
+    _manager.claimReward(level, isPremiumReward: isPremium);
     notifyListeners();
   }
 }

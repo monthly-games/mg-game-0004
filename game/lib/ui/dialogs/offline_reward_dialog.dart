@@ -1,3 +1,4 @@
+import 'package:mg_common_game/core/ui/layout/mg_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:cafe_match_tycoon/game/logic/idle_income_manager.dart';
 import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
@@ -18,7 +19,7 @@ class OfflineRewardDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(MGSpacing.lg),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
@@ -42,7 +43,7 @@ class OfflineRewardDialog extends StatelessWidget {
                 color: MGColors.textHighEmphasis,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: MGSpacing.xs),
 
             // 오프라인 시간
             Text(
@@ -52,7 +53,7 @@ class OfflineRewardDialog extends StatelessWidget {
                 color: Colors.white70,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: MGSpacing.lg),
 
             // 골드 아이콘 + 금액
             Container(
@@ -75,7 +76,7 @@ class OfflineRewardDialog extends StatelessWidget {
                     color: MGColors.gold,
                     size: 64,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: MGSpacing.sm),
                   Text(
                     '+${reward.goldEarned} 골드',
                     style: const TextStyle(
@@ -84,7 +85,7 @@ class OfflineRewardDialog extends StatelessWidget {
                       color: MGColors.gold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: MGSpacing.xs),
                   Text(
                     '(${reward.goldPerMinute} 골드/분)',
                     style: const TextStyle(
@@ -95,7 +96,7 @@ class OfflineRewardDialog extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: MGSpacing.lg),
 
             // 안내 메시지
             const Text(
@@ -107,7 +108,7 @@ class OfflineRewardDialog extends StatelessWidget {
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: MGSpacing.lg),
 
             // 확인 버튼
             SizedBox(

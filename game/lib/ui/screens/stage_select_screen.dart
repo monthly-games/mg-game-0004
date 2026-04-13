@@ -4,6 +4,7 @@ import 'package:mg_common_game/core/ui/mg_ui.dart';
 import '../../game/models/stage.dart';
 import 'game_screen.dart';
 
+
 class StageSelectScreen extends StatefulWidget {
   const StageSelectScreen({super.key});
 
@@ -24,8 +25,8 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Select Stage'),
-        backgroundColor: MGColors.primary,
+        title: Text("Select Stage"),
+        backgroundColor: MGColors.primaryAction,
         foregroundColor: MGColors.textHighEmphasis,
       ),
       body: Container(
@@ -81,12 +82,12 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: isUnlocked
-              ? (isCurrent ? MGColors.primary : MGColors.textHighEmphasis)
+              ? (isCurrent ? MGColors.primaryAction : MGColors.textHighEmphasis)
               : Colors.grey.shade300,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isCurrent
-                ? MGColors.primary
+                ? MGColors.primaryAction
                 : (isUnlocked ? Colors.brown.shade300 : MGColors.common),
             width: isCurrent ? 3 : 1,
           ),
@@ -115,7 +116,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
             else
               Icon(Icons.lock, color: MGColors.common, size: 28),
 
-            SizedBox(height: 4),
+            SizedBox(height: MGSpacing.xxs),
 
             // Stars
             if (isUnlocked)

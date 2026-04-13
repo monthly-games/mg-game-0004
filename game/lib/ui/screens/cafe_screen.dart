@@ -5,6 +5,7 @@ import 'package:mg_common_game/core/ui/mg_ui.dart';
 import '../../game/logic/cafe_manager.dart';
 import '../../game/models/customer.dart';
 
+
 class CafeScreen extends StatefulWidget {
   const CafeScreen({super.key});
 
@@ -49,7 +50,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Cafe'),
+        title: const Text('My Cafe'),
         backgroundColor: Colors.brown,
         foregroundColor: MGColors.textHighEmphasis,
         actions: [
@@ -124,7 +125,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
             icon: Icons.people,
             label: 'Served',
             value: '${_customerManager.totalCustomersServed}',
-            color: MGColors.primary,
+            color: MGColors.primaryAction,
           ),
           _buildStatItem(
             icon: Icons.grade,
@@ -146,7 +147,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
     return Column(
       children: [
         Icon(icon, color: color, size: 24),
-        SizedBox(height: 4),
+        SizedBox(height: MGSpacing.xxs),
         Text(
           value,
           style: MGTextStyles.h2.copyWith(
@@ -156,7 +157,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
         Text(
           label,
           style: MGTextStyles.caption.copyWith(
-            color: AppColors.textMediumEmphasis,
+            color: MGColors.textMediumEmphasis,
           ),
         ),
       ],
@@ -235,25 +236,25 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
             color: _getMoodColor(customer.mood),
             size: 28,
           ),
-          SizedBox(height: 4),
+          SizedBox(height: MGSpacing.xxs),
           Text(
             customer.name,
             style: MGTextStyles.caption.copyWith(fontWeight: FontWeight.bold),
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 4),
+          SizedBox(height: MGSpacing.xxs),
           Text(
             customer.orders.first.menuName,
             style: MGTextStyles.caption.copyWith(fontSize: 10),
           ),
-          SizedBox(height: 4),
+          SizedBox(height: MGSpacing.xxs),
           // Patience bar
           LinearProgressIndicator(
             value: customer.satisfactionRatio,
             backgroundColor: Colors.grey.shade300,
             valueColor: AlwaysStoppedAnimation(_getMoodColor(customer.mood)),
           ),
-          SizedBox(height: 4),
+          SizedBox(height: MGSpacing.xxs),
           // Serve button
           if (_cafeManager.menus.any(
             (m) => m.id == customer.orders.first.menuId && m.stock > 0,
@@ -424,7 +425,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
                 _cafeManager.unlockMenu(menu.id);
                 setState(() {});
               },
-              child: Text('Unlock'),
+              child: const Text('Unlock'),
             )
           else
             ElevatedButton(
@@ -435,7 +436,7 @@ class _CafeScreenState extends State<CafeScreen> with TickerProviderStateMixin {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: canCook ? MGColors.primary : MGColors.common,
+                backgroundColor: canCook ? MGColors.primaryAction : MGColors.common,
               ),
               child: Text('Cook'),
             ),

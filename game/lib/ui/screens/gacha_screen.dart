@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/ui/mg_ui.dart';
-import 'package:mg_common_game/systems/gacha/gacha_pool.dart';
+import 'package:mg_common_game/systems/gacha/gacha_pool.dart';import 'package:mg_common_game/l10n/localization.dart';
+
 
 import '../../features/gacha/gacha_adapter.dart' as gacha_adapter;
 
@@ -27,27 +28,27 @@ class _GachaScreenState extends State<GachaScreen> {
     return Scaffold(
       backgroundColor: MGColors.surface,
       appBar: AppBar(
-        title: const Text('Gacha'),
-        backgroundColor: MGColors.primary,
+        title: const Text("Gacha"),
+        backgroundColor: MGColors.primaryAction,
       ),
       body: ListenableBuilder(
         listenable: _gacha,
         builder: (context, _) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(MGSpacing.md),
             child: Column(
               children: [
                 // Pool header
                 _buildPoolHeader(),
-                const SizedBox(height: 24),
+                const SizedBox(height: MGSpacing.lg),
 
                 // Pity counter
                 _buildPityCounter(),
-                const SizedBox(height: 24),
+                const SizedBox(height: MGSpacing.lg),
 
                 // Pull buttons
                 _buildPullButtons(),
-                const SizedBox(height: 24),
+                const SizedBox(height: MGSpacing.lg),
 
                 // Pull results
                 if (_pullResults.isNotEmpty) _buildPullResults(),
@@ -64,10 +65,10 @@ class _GachaScreenState extends State<GachaScreen> {
       child: Column(
         children: [
           Text('Cafe Match Tycoon Gacha', style: MGTextStyles.h2),
-          const SizedBox(height: 8),
+          const SizedBox(height: MGSpacing.xs),
           Text(
             'Collect decorations to customize your cafe',
-            style: MGTextStyles.body.copyWith(color: AppColors.textMediumEmphasis),
+            style: MGTextStyles.body.copyWith(color: MGColors.textMediumEmphasis),
           ),
         ],
       ),
@@ -85,7 +86,7 @@ class _GachaScreenState extends State<GachaScreen> {
           Text(
             '$pityRemaining pulls until guaranteed',
             style: MGTextStyles.body.copyWith(
-              color: pityRemaining <= 10 ? MGColors.warning : AppColors.textMediumEmphasis,
+              color: pityRemaining <= 10 ? MGColors.warning : MGColors.textMediumEmphasis,
             ),
           ),
         ],
@@ -97,13 +98,13 @@ class _GachaScreenState extends State<GachaScreen> {
     return Column(
       children: [
         MGButton(
-          label: 'Pull x1',
+          label: "Pull x1",
           onPressed: _pullSingle,
           width: double.infinity,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: MGSpacing.xs),
         MGButton(
-          label: 'Pull x10',
+          label: "Pull x10",
           onPressed: _pullTen,
           width: double.infinity,
         ),
@@ -117,7 +118,7 @@ class _GachaScreenState extends State<GachaScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Last Pull Results', style: MGTextStyles.h3),
-          const SizedBox(height: 8),
+          const SizedBox(height: MGSpacing.xs),
           ..._pullResults.map((item) => _buildResultItem(item)),
         ],
       ),
@@ -130,7 +131,7 @@ class _GachaScreenState extends State<GachaScreen> {
       child: Row(
         children: [
           Icon(Icons.star, color: _getRarityColor(item.rarity), size: 20),
-          const SizedBox(width: 8),
+          const SizedBox(width: MGSpacing.xs),
           Expanded(
             child: Text(item.name, style: MGTextStyles.body),
           ),
@@ -183,7 +184,7 @@ class _GachaScreenState extends State<GachaScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Got: ${result.name}!'),
+          content: Text("Got"),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -197,7 +198,7 @@ class _GachaScreenState extends State<GachaScreen> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Got ${results.length} items!'),
+        content: Text("items"),
         duration: const Duration(seconds: 2),
       ),
     );

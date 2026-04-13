@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/ui/mg_ui.dart';
-import 'package:mg_common_game/systems/battlepass/battlepass_config.dart';
+import 'package:mg_common_game/systems/battlepass/battlepass_config.dart';import 'package:mg_common_game/l10n/localization.dart';
+
 
 import '../../features/battlepass/battlepass_adapter.dart';
 
@@ -26,8 +27,8 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
     return Scaffold(
       backgroundColor: MGColors.surface,
       appBar: AppBar(
-        title: const Text('Battle Pass'),
-        backgroundColor: MGColors.primary,
+        title: const Text("Battle Pass"),
+        backgroundColor: MGColors.primaryAction,
       ),
       body: ListenableBuilder(
         listenable: _battlepass,
@@ -43,21 +44,21 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(MGSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Season header
                 _buildSeasonHeader(season),
-                const SizedBox(height: 24),
+                const SizedBox(height: MGSpacing.lg),
 
                 // Progress indicator
                 _buildProgressSection(season),
-                const SizedBox(height: 24),
+                const SizedBox(height: MGSpacing.lg),
 
                 // Missions
                 _buildMissionsSection(),
-                const SizedBox(height: 24),
+                const SizedBox(height: MGSpacing.lg),
 
                 // Premium upgrade button
                 if (!_battlepass.isPremium)
@@ -76,10 +77,10 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(season.nameKr, style: MGTextStyles.h2),
-          const SizedBox(height: 8),
+          const SizedBox(height: MGSpacing.xs),
           Text(
             'Ends: ${_formatDate(season.endDate)}',
-            style: MGTextStyles.body.copyWith(color: AppColors.textMediumEmphasis),
+            style: MGTextStyles.body.copyWith(color: MGColors.textMediumEmphasis),
           ),
         ],
       ),
@@ -102,16 +103,16 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
               Text('Level $currentLevel', style: MGTextStyles.h3),
               Text(
                 '$currentExp / $expForLevel XP',
-                style: MGTextStyles.body.copyWith(color: AppColors.textMediumEmphasis),
+                style: MGTextStyles.body.copyWith(color: MGColors.textMediumEmphasis),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: MGSpacing.xs),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: MGLinearProgress(
               value: progress.clamp(0.0, 1.0),
-              backgroundColor: AppColors.textMediumEmphasis.withValues(alpha: 0.2),
+              backgroundColor: MGColors.textMediumEmphasis.withValues(alpha: 0.2),
               valueColor: MGColors.success,
             ),
           ),
@@ -129,13 +130,13 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
       children: [
         if (dailyMissions.isNotEmpty) ...[
           Text('Daily Missions', style: MGTextStyles.h3),
-          const SizedBox(height: 8),
+          const SizedBox(height: MGSpacing.xs),
           ...dailyMissions.map((mission) => _buildMissionCard(mission)),
-          const SizedBox(height: 16),
+          const SizedBox(height: MGSpacing.md),
         ],
         if (weeklyMissions.isNotEmpty) ...[
           Text('Weekly Missions', style: MGTextStyles.h3),
-          const SizedBox(height: 8),
+          const SizedBox(height: MGSpacing.xs),
           ...weeklyMissions.map((mission) => _buildMissionCard(mission)),
         ],
       ],
@@ -154,10 +155,10 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(mission.titleKr, style: MGTextStyles.body),
-                const SizedBox(height: 4),
+                const SizedBox(height: MGSpacing.xxs),
                 Text(
                   '$missionProgress / ${mission.targetValue}',
-                  style: MGTextStyles.caption.copyWith(color: AppColors.textMediumEmphasis),
+                  style: MGTextStyles.caption.copyWith(color: MGColors.textMediumEmphasis),
                 ),
               ],
             ),
@@ -169,7 +170,7 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
               borderRadius: BorderRadius.circular(4),
               child: MGLinearProgress(
                 value: (missionProgress / mission.targetValue).clamp(0.0, 1.0),
-                backgroundColor: AppColors.textMediumEmphasis.withValues(alpha: 0.2),
+                backgroundColor: MGColors.textMediumEmphasis.withValues(alpha: 0.2),
                 valueColor: MGColors.info,
               ),
             ),
@@ -181,7 +182,7 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
 
   Widget _buildPremiumUpgradeButton(BPSeasonConfig season) {
     return MGButton(
-      label: 'Upgrade to Premium',
+      label: "Upgrade to Premium",
       onPressed: _upgradeToPremium,
       width: double.infinity,
     );
@@ -191,7 +192,7 @@ class _BattlepassScreenState extends State<BattlepassScreen> {
     _battlepass.purchasePremium();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Premium unlocked!'),
+        content: Text("Premium Unlocked!"),
         duration: Duration(seconds: 2),
       ),
     );

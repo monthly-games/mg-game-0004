@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/economy/gold_manager.dart';
 import 'package:mg_common_game/core/ui/mg_ui.dart';
@@ -6,6 +7,7 @@ import '../../game/logic/cafe_manager.dart';
 import '../../game/models/stage.dart';
 import 'cafe_screen.dart';
 import 'stage_select_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,39 +44,41 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              MGColors.primary.withValues(alpha: 0.8),
-              MGColors.surface,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Top Bar
-              _buildTopBar(),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  MGColors.primaryAction.withValues(alpha: 0.8),
+                  MGColors.surface,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Top Bar
+                  _buildTopBar(),
 
-              // Main Content
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(MGSpacing.md),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Cafe Preview
-                      _buildCafePreview(),
+                  // Main Content
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(MGSpacing.md),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Cafe Preview
+                          _buildCafePreview(),
 
-                      SizedBox(height: MGSpacing.xl),
+                          SizedBox(height: MGSpacing.xl),
 
                       // Main Buttons
                       _buildMainButton(
                         icon: Icons.play_arrow,
-                        label: 'Play Stage',
+                        label: "Play Stage",
                         color: MGColors.success,
                         onTap: () => _navigateToStageSelect(),
                       ),
@@ -83,8 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       _buildMainButton(
                         icon: Icons.store,
-                        label: 'My Cafe',
-                        color: MGColors.primary,
+                        label: "My Cafe",
+                        color: MGColors.primaryAction,
                         onTap: () => _navigateToCafe(),
                       ),
 
@@ -95,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Expanded(
                             child: _buildSecondaryButton(
                               icon: Icons.menu_book,
-                              label: 'Menu',
+                              label: "Price",
                               onTap: () => _showMenuDialog(),
                             ),
                           ),
@@ -103,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Expanded(
                             child: _buildSecondaryButton(
                               icon: Icons.inventory_2,
-                              label: 'Inventory',
+                              label: "Inventory",
                               onTap: () => _showInventoryDialog(),
                             ),
                           ),
@@ -117,6 +121,38 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+      // Spine character placeholder (top-right corner)
+      Positioned(
+        top: 60,
+        right: 16,
+        child: GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Barista says: Welcome to my cafe!"),
+                duration: Duration(seconds: 1),
+              ),
+            );
+          },
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: MGColors.primaryAction.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: MGColors.primaryAction, width: 2),
+            ),
+            child: const Icon(
+              Icons.person,
+              size: 60,
+              color: MGColors.textHighEmphasis,
+            ),
+          ),
+        ),
+      ),
+    ],
+    ),
     );
   }
 
@@ -210,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   vertical: MGSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: MGColors.primary,
+                  color: MGColors.primaryAction,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -237,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 children: [
                   Icon(Icons.grade, color: MGColors.gold, size: 16),
-                  SizedBox(width: 4),
+                  SizedBox(width: MGSpacing.xxs),
                   Text(
                     'Lv.${_cafeManager.cafeReputationLevel}',
                     style: MGTextStyles.caption.copyWith(color: MGColors.textHighEmphasis),
@@ -263,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 children: [
                   Icon(Icons.star, color: Colors.amber, size: 16),
-                  SizedBox(width: 4),
+                  SizedBox(width: MGSpacing.xxs),
                   Text(
                     '4.8',
                     style: MGTextStyles.caption.copyWith(color: MGColors.textHighEmphasis),
@@ -325,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
           foregroundColor: MGColors.textHighEmphasis,
-          side: BorderSide(color: MGColors.primary),
+          side: BorderSide(color: MGColors.primaryAction),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -360,25 +396,25 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Menu'),
+        title: Text("Price"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: _cafeManager.menus.map((menu) {
             return ListTile(
               leading: Icon(
                 menu.isUnlocked ? Icons.coffee : Icons.lock,
-                color: menu.isUnlocked ? MGColors.primary : MGColors.common,
+                color: menu.isUnlocked ? MGColors.primaryAction : MGColors.common,
               ),
               title: Text(menu.name),
-              subtitle: Text('Price: ${menu.basePrice}G'),
+              subtitle: Text("Price"),
               trailing: menu.isUnlocked
-                  ? Text('Stock: ${menu.stock}')
+                  ? Text("Stock")
                   : TextButton(
                       onPressed: () {
                         _cafeManager.unlockMenu(menu.id);
                         Navigator.pop(ctx);
                       },
-                      child: Text('Unlock'),
+                      child: Text("Unlocked!"),
                     ),
             );
           }).toList(),
@@ -404,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return ListTile(
               leading: Icon(_getIngredientIcon(e.key)),
               title: Text(e.key.toUpperCase()),
-              trailing: Text('${e.value}'),
+              trailing: Text("Value"),
             );
           }).toList(),
         ),

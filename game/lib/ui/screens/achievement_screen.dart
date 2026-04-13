@@ -1,6 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 // ============================================================
-// Achievement Screen — MG-0004 Cafe Match Tycoon
+// Achievement Screen -- MG-0004 Cafe Match Tycoon
 // Genre: Idle · Retention System UI
 //
 // Firebase Analytics Events:

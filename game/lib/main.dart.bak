@@ -1,8 +1,8 @@
+import 'package:mg_common_game/mg_common_game.dart' hide TutorialOverlay;
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:mg_common_game/systems/systems.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/economy/gold_manager.dart';
+import 'package:mg_common_game/core/ui/theme/app_colors.dart';
 import 'package:mg_common_game/core/ui/theme/game_theme.dart';
 import 'package:flame/game.dart';
 import 'game/logic/cafe_manager.dart';
@@ -10,33 +10,32 @@ import 'game/logic/idle_income_manager.dart';
 import 'game/match3_game.dart';
 import 'game/models/stage.dart';
 import 'game/models/customer.dart';
-import 'package:mg_common_game/core/audio/audio_manager.dart';
-import 'package:mg_common_game/core/ui/theme/app_colors.dart';
 import 'ui/dialogs/offline_reward_dialog.dart';
-import 'ui/overlays/tutorial_overlay.dart';
 import 'ui/screens/home_screen.dart';
-import 'package:mg_common_game/systems/progression/progression_manager.dart';
-import 'package:mg_common_game/systems/progression/upgrade_manager.dart';
-import 'package:mg_common_game/systems/progression/achievement_manager.dart';
-import 'package:mg_common_game/systems/progression/prestige_manager.dart';
 import 'package:mg_common_game/core/ui/screens/prestige_screen.dart';
-import 'package:mg_common_game/systems/quests/daily_quest.dart';
 import 'package:mg_common_game/core/ui/screens/daily_quest_screen.dart';
-import 'package:mg_common_game/systems/quests/weekly_challenge.dart';
 import 'package:mg_common_game/core/ui/screens/weekly_challenge_screen.dart';
-import 'package:mg_common_game/systems/settings/settings_manager.dart';
 import 'ui/screens/achievement_screen.dart';
 import 'package:mg_common_game/core/ui/screens/settings_screen.dart';
-import 'package:mg_common_game/core/systems/save_manager_helper.dart';
-import 'package:mg_common_game/systems/stats/statistics_manager.dart';
 import 'package:mg_common_game/core/ui/screens/statistics_screen.dart';
 import 'package:mg_common_game/core/ui/overlays/pause_game_overlay.dart';
 import 'package:mg_common_game/core/ui/overlays/settings_game_overlay.dart';
+import 'package:mg_common_game/l10n/extensions.dart';
 import 'ui/hud/mg_puzzle_hud.dart';
+import 'screens/collection_screen.dart';
+// import 'game/balancing_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _setupDI();
+  // ── Q7 DI Fix: Missing Systems ──────────────────────────
+  if (!GetIt.I.isRegistered<BattlePassManager>()) {
+    GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
+  }
+  if (!GetIt.I.isRegistered<GachaManager>()) {
+    GetIt.I.registerSingleton<GachaManager>(GachaManager());
+  }
+
   runApp(const CafeMatchApp());
 }
 
@@ -355,11 +354,6 @@ Future<void> _setupDI() async {
   if (!GetIt.I.isRegistered<StatisticsManager>()) {
     final statisticsManager = StatisticsManager();
     GetIt.I.registerSingleton(statisticsManager);
-  // Collection 시스템
-  if (!GetIt.I.isRegistered<CollectionManager>()) {
-    GetIt.I.registerSingleton(CollectionManager());
-    _registerCollections();
-  }
 
     // Load saved stats and start session
     await statisticsManager.loadStats();
@@ -407,23 +401,12 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
   final _cafeManager = GetIt.I<CafeManager>();
   final _goldManager = GetIt.I<GoldManager>();
   final _idleIncomeManager = GetIt.I<IdleIncomeManager>();
-  bool _showTutorial = false;
   late Match3Game _game;
 
   @override
   void initState() {
     super.initState();
-    _checkTutorial();
     _checkOfflineReward();
-  }
-
-  Future<void> _checkTutorial() async {
-    final hasSeenTutorial = await TutorialOverlay.hasSeenTutorial();
-    if (!hasSeenTutorial && mounted) {
-      setState(() {
-        _showTutorial = true;
-      });
-    }
   }
 
   /// 오프라인 보상 확인 및 표시
@@ -582,19 +565,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          _state == GameState.lobby ? _buildLobby() : _buildPuzzle(),
-          if (_showTutorial)
-            TutorialOverlay(
-              onComplete: () {
-                setState(() {
-                  _showTutorial = false;
-                });
-              },
-            ),
-        ],
-      ),
+      body: _state == GameState.lobby ? _buildLobby() : _buildPuzzle(),
     );
   }
 
@@ -650,13 +621,13 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                         children: [
                           Icon(
                             _getIngredientIcon(entry.key),
-                            color: Colors.white,
+                            color: MGColors.textHighEmphasis,
                             size: 20,
                           ),
                           Text(
                             '${entry.value}',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: MGColors.textHighEmphasis,
                               fontSize: 12,
                             ),
                           ),
@@ -728,8 +699,8 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                                   menu.name,
                                   style: TextStyle(
                                     color: menu.isUnlocked
-                                        ? Colors.white
-                                        : Colors.grey,
+                                        ? MGColors.textHighEmphasis
+                                        : MGColors.common,
                                   ),
                                 ),
                                 subtitle: Text(
@@ -753,7 +724,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                                     : IconButton(
                                         icon: const Icon(
                                           Icons.lock_open,
-                                          color: Colors.grey,
+                                          color: MGColors.common,
                                         ),
                                         onPressed: () =>
                                             _cafeManager.unlockMenu(menu.id),
@@ -780,7 +751,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                             vertical: 10,
                           ),
                           backgroundColor: Colors.purple.shade700,
-                          foregroundColor: Colors.white,
+                          foregroundColor: MGColors.textHighEmphasis,
                         ),
                         onPressed: () => _showDailyQuestsScreen(context),
                         icon: const Icon(Icons.assignment_turned_in, size: 18),
@@ -829,7 +800,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                             vertical: 12,
                           ),
                           backgroundColor: Colors.grey.shade700,
-                          foregroundColor: Colors.white,
+                          foregroundColor: MGColors.textHighEmphasis,
                         ),
                         onPressed: () => _showSettingsScreen(context),
                         icon: const Icon(Icons.settings),
@@ -849,7 +820,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                             vertical: 12,
                           ),
                           backgroundColor: Colors.blue.shade700,
-                          foregroundColor: Colors.white,
+                          foregroundColor: MGColors.textHighEmphasis,
                         ),
                         onPressed: () => _showStatisticsScreen(context),
                         icon: const Icon(Icons.bar_chart),
@@ -972,6 +943,16 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                 _game.overlays.add('PauseGame');
               },
               onHint: null, // 힌트 기능 구현시 연결
+              onDailyHub: () => Navigator.of(context).pushNamed('/daily-hub'),
+              onGuildWar: () {
+Navigator.of(context).pushNamed('/guild-war');
+              },
+              onTournament: () {
+Navigator.of(context).pushNamed('/tournament');
+              },
+              onSeasonalEvent: () {
+Navigator.of(context).pushNamed('/seasonal-event');
+              },
             );
           },
         ),
@@ -1001,7 +982,7 @@ void _registerCollections() {
   final collection = GetIt.I<CollectionManager>();
 
   // Characters 컬렉션
-  collection.registerCollection(const Collection(
+  collection.registerCollection(Collection(
     id: 'characters',
     name: '캐릭터',
     description: '모든 캐릭터를 수집하세요',
@@ -1037,11 +1018,11 @@ void _registerCollections() {
         rarity: CollectionRarity.legendary,
       ),
     ],
-    completionReward: CollectionReward(gold: 10000, gems: 500, experience: 2000),
+    completionReward: CollectionReward(type: RewardType.gold, amount: 10000),
     milestoneRewards: {
-      25: CollectionReward(gold: 1000, gems: 50),
-      50: CollectionReward(gold: 3000, gems: 150),
-      75: CollectionReward(gold: 5000, gems: 300),
+      25: CollectionReward(type: RewardType.gold, amount: 1000),
+      50: CollectionReward(type: RewardType.gold, amount: 3000),
+      75: CollectionReward(type: RewardType.gold, amount: 5000),
     },
   ));
 

@@ -2,6 +2,8 @@ import 'package:mg_common_game/mg_common_game.dart' hide TutorialOverlay;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/economy/gold_manager.dart';
+import 'package:mg_common_game/core/ui/theme/app_colors.dart';
+import 'package:mg_common_game/core/ui/theme/game_theme.dart';
 import 'package:flame/game.dart';
 import 'game/logic/cafe_manager.dart';
 import 'game/logic/idle_income_manager.dart';
@@ -9,7 +11,6 @@ import 'game/match3_game.dart';
 import 'game/models/stage.dart';
 import 'game/models/customer.dart';
 import 'ui/dialogs/offline_reward_dialog.dart';
-import 'ui/overlays/tutorial_overlay.dart';
 import 'ui/screens/home_screen.dart';
 import 'package:mg_common_game/core/ui/screens/prestige_screen.dart';
 import 'package:mg_common_game/core/ui/screens/daily_quest_screen.dart';
@@ -19,29 +20,14 @@ import 'package:mg_common_game/core/ui/screens/settings_screen.dart';
 import 'package:mg_common_game/core/ui/screens/statistics_screen.dart';
 import 'package:mg_common_game/core/ui/overlays/pause_game_overlay.dart';
 import 'package:mg_common_game/core/ui/overlays/settings_game_overlay.dart';
+import 'package:mg_common_game/l10n/extensions.dart';
 import 'ui/hud/mg_puzzle_hud.dart';
 import 'screens/collection_screen.dart';
-import 'game/tutorial_config.dart';
-import 'game/balancing_config.dart';
+// import 'game/balancing_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _setupDI();
-  // ── Tutorial & Balancing ──────────────────────────────────
-  if (!GetIt.I.isRegistered<TutorialManager>()) {
-    final tutorialManager = TutorialManager();
-    await tutorialManager.initialize();
-    tutorialManager.registerTutorial(
-      kOnboardingTutorial.id,
-      kOnboardingTutorial.steps,
-    );
-    GetIt.I.registerSingleton<TutorialManager>(tutorialManager);
-  }
-  if (!GetIt.I.isRegistered<BalancingManager>()) {
-    GetIt.I.registerSingleton<BalancingManager>(
-      BalancingManager(defaultConfig: kDefaultBalancingConfig),
-    );
-  }
   // ── Q7 DI Fix: Missing Systems ──────────────────────────
   if (!GetIt.I.isRegistered<BattlePassManager>()) {
     GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
@@ -54,19 +40,19 @@ void main() async {
 }
 
 Future<void> _setupDI() async {
-  final goldManager = GoldManager();
-  GetIt.I.registerSingleton<GoldManager>(goldManager);
+  // Register GoldManager only if not already registered
+  if (!GetIt.I.isRegistered<GoldManager>()) {
+    GetIt.I.registerSingleton<GoldManager>(GoldManager());
+  }
 
-  final audioManager = AudioManager();
-  GetIt.I.registerSingleton<AudioManager>(audioManager);
-  audioManager.initialize();
+  // Register AudioManager only if not already registered
+  if (!GetIt.I.isRegistered<AudioManager>()) {
+    final audioManager = AudioManager();
+    GetIt.I.registerSingleton<AudioManager>(audioManager);
+    audioManager.initialize();
+  }
 
-  GetIt.I.registerSingleton<CafeManager>(CafeManager(goldManager: goldManager));
-  GetIt.I.registerSingleton<IdleIncomeManager>(IdleIncomeManager());
-  GetIt.I.registerSingleton<StageManager>(StageManager());
-  GetIt.I.registerSingleton<CustomerManager>(CustomerManager());
-
-  // -- Meta Progression Registration --
+  // -- Meta Progression Registration FIRST (CafeManager depends on these) --
 
   // 1. Progression Manager (Cafe Reputation / Level)
   if (!GetIt.I.isRegistered<ProgressionManager>()) {
@@ -83,7 +69,7 @@ Future<void> _setupDI() async {
     };
   }
 
-  // 2. Upgrade Manager
+  // 2. Upgrade Manager - MUST be registered before CafeManager
   if (!GetIt.I.isRegistered<UpgradeManager>()) {
     final upgradeManager = UpgradeManager();
 
@@ -114,6 +100,39 @@ Future<void> _setupDI() async {
 
     GetIt.I.registerSingleton(upgradeManager);
   }
+
+  // 3. Achievement Manager - also needed by CafeManager
+  if (!GetIt.I.isRegistered<AchievementManager>()) {
+    final achievementManager = AchievementManager();
+
+    achievementManager.registerAchievement(
+      Achievement(
+        id: 'cafe_level_5',
+        title: 'Rising Star',
+        description: 'Reach Cafe Level 5',
+        iconAsset: 'assets/images/icon_star.png', // Placeholder
+      ),
+    );
+
+    // Haptic feedback on achievement unlock
+    achievementManager.onAchievementUnlocked = (achievement) {
+      if (GetIt.I.isRegistered<SettingsManager>()) {
+        GetIt.I<SettingsManager>().triggerVibration(
+          intensity: VibrationIntensity.heavy,
+        );
+      }
+    };
+
+    GetIt.I.registerSingleton(achievementManager);
+  }
+
+  // Register other managers FIRST before CafeManager (which depends on them)
+  GetIt.I.registerSingleton<IdleIncomeManager>(IdleIncomeManager());
+  GetIt.I.registerSingleton<StageManager>(StageManager());
+  GetIt.I.registerSingleton<CustomerManager>(CustomerManager());
+
+  // NOW register CafeManager after all its dependencies
+  GetIt.I.registerSingleton<CafeManager>(CafeManager(goldManager: GetIt.I<GoldManager>()));
 
   // 3. Achievement Manager
   if (!GetIt.I.isRegistered<AchievementManager>()) {
@@ -185,7 +204,7 @@ Future<void> _setupDI() async {
 
     // Connect prestige manager to progression and gold managers
     GetIt.I<ProgressionManager>().setPrestigeManager(prestigeManager);
-    goldManager.setPrestigeManager(prestigeManager);
+    GetIt.I<GoldManager>().setPrestigeManager(prestigeManager);
   }
 
   // 5. Daily Quest Manager
@@ -368,31 +387,6 @@ Future<void> _setupDI() async {
   if (!GetIt.I.isRegistered<StatisticsManager>()) {
     final statisticsManager = StatisticsManager();
     GetIt.I.registerSingleton(statisticsManager);
-  // Collection 시스템
-  if (!GetIt.I.isRegistered<CollectionManager>()) {
-    GetIt.I.registerSingleton(CollectionManager());
-  // ── Retention Systems for DailyHub ────────────────────────
-  if (!GetIt.I.isRegistered<LoginRewardsManager>()) {
-    GetIt.I.registerSingleton(LoginRewardsManager());
-  }
-  if (!GetIt.I.isRegistered<StreakManager>()) {
-    GetIt.I.registerSingleton(StreakManager());
-  }
-  if (!GetIt.I.isRegistered<DailyChallengeManager>()) {
-    GetIt.I.registerSingleton(DailyChallengeManager());
-}
-  // ── P3 Engine Systems ─────────────────────────────────────
-  if (!GetIt.I.isRegistered<GuildWarManager>()) {
-    GetIt.I.registerSingleton(GuildWarManager());
-  }
-  if (!GetIt.I.isRegistered<TournamentManager>()) {
-    GetIt.I.registerSingleton(TournamentManager());
-  }
-  if (!GetIt.I.isRegistered<SeasonalContentManager>()) {
-    GetIt.I.registerSingleton(SeasonalContentManager());
-  }
-    _registerCollections();
-  }
 
     // Load saved stats and start session
     await statisticsManager.loadStats();
@@ -419,34 +413,7 @@ class CafeMatchApp extends StatelessWidget {
       theme: GameTheme.darkTheme,
       routes: {
         '/achievements': (_) => const AchievementScreen(),
-        '/daily-hub': (context) => DailyHubScreen(
-          questManager: GetIt.I<DailyQuestManager>(),
-          loginRewardsManager: GetIt.I<LoginRewardsManager>(),
-          streakManager: GetIt.I<StreakManager>(),
-          challengeManager: GetIt.I<DailyChallengeManager>(),
-          accentColor: MGColors.primaryAction,
-          onClose: () => Navigator.pop(context),
-        ),
-      
-        '/collection': (context) => CollectionScreen(
-          collectionManager: GetIt.I<CollectionManager>(),
-        ),
-        '/guild-war': (context) => GuildWarScreen(
-          guildWarManager: GetIt.I<GuildWarManager>(),
-          accentColor: MGColors.primaryAction,
-          onClose: () => Navigator.pop(context),
-          ),
-        '/tournament': (context) => TournamentScreen(
-          tournamentManager: GetIt.I<TournamentManager>(),
-          accentColor: MGColors.primaryAction,
-          onClose: () => Navigator.pop(context),
-          ),
-        '/seasonal-event': (context) => SeasonalEventScreen(
-          seasonalContentManager: GetIt.I<SeasonalContentManager>(),
-          accentColor: MGColors.primaryAction,
-          onClose: () => Navigator.pop(context),
-          ),
-},
+      },
       home: const HomeScreen(),
       debugShowCheckedModeBanner: false,
     );
@@ -467,23 +434,12 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
   final _cafeManager = GetIt.I<CafeManager>();
   final _goldManager = GetIt.I<GoldManager>();
   final _idleIncomeManager = GetIt.I<IdleIncomeManager>();
-  bool _showTutorial = false;
   late Match3Game _game;
 
   @override
   void initState() {
     super.initState();
-    _checkTutorial();
     _checkOfflineReward();
-  }
-
-  Future<void> _checkTutorial() async {
-    final hasSeenTutorial = await TutorialOverlay.hasSeenTutorial();
-    if (!hasSeenTutorial && mounted) {
-      setState(() {
-        _showTutorial = true;
-      });
-    }
   }
 
   /// 오프라인 보상 확인 및 표시
@@ -642,19 +598,7 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          _state == GameState.lobby ? _buildLobby() : _buildPuzzle(),
-          if (_showTutorial)
-            TutorialOverlay(
-              onComplete: () {
-                setState(() {
-                  _showTutorial = false;
-                });
-              },
-            ),
-        ],
-      ),
+      body: _state == GameState.lobby ? _buildLobby() : _buildPuzzle(),
     );
   }
 
@@ -681,15 +625,11 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
                           color: AppColors.textHighEmphasis,
                         ),
                       ),
-                      StreamBuilder<int>(
-                        stream: _goldManager.onGoldChanged,
-                        initialData: _goldManager.currentGold,
-                        builder: (_, snapshot) => Text(
-                          'Gold: ${snapshot.data}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: AppColors.secondary,
-                          ),
+                      Text(
+                        'Gold: ${_goldManager.currentGold}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: AppColors.secondary,
                         ),
                       ),
                     ],
@@ -1019,12 +959,10 @@ class _CafeMatchScreenState extends State<CafeMatchScreen> {
         ),
 
         // MG UI HUD Overlay
-        StreamBuilder<int>(
-          stream: _goldManager.onGoldChanged,
-          initialData: _goldManager.currentGold,
-          builder: (context, snapshot) {
+        Builder(
+          builder: (context) {
             return MGPuzzleHud(
-              gold: snapshot.data ?? 0,
+              gold: _goldManager.currentGold,
               moves: 0, // 게임에서 moves 추적시 연결
               score: 0, // 게임에서 score 추적시 연결
               onPause: () {
