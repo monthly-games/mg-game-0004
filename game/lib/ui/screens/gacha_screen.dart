@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/ui/mg_ui.dart';
-import 'package:mg_common_game/systems/gacha/gacha_pool.dart';import 'package:mg_common_game/l10n/localization.dart';
+import 'package:mg_common_game/systems/gacha/gacha_pool.dart';
 
 
 import '../../features/gacha/gacha_adapter.dart' as gacha_adapter;
