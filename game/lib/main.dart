@@ -1,1061 +1,434 @@
-import 'package:mg_common_game/mg_common_game.dart' hide TutorialOverlay;
-import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:mg_common_game/core/economy/gold_manager.dart';
-import 'package:mg_common_game/core/ui/theme/app_colors.dart';
-import 'package:mg_common_game/core/ui/theme/game_theme.dart';
 import 'package:flame/game.dart';
-import 'game/logic/cafe_manager.dart';
-import 'game/logic/idle_income_manager.dart';
-import 'game/match3_game.dart';
-import 'game/models/stage.dart';
-import 'game/models/customer.dart';
-import 'ui/dialogs/offline_reward_dialog.dart';
-import 'ui/screens/home_screen.dart';
-import 'package:mg_common_game/core/ui/screens/prestige_screen.dart';
-import 'package:mg_common_game/core/ui/screens/daily_quest_screen.dart';
-import 'package:mg_common_game/core/ui/screens/weekly_challenge_screen.dart';
-import 'ui/screens/achievement_screen.dart';
-import 'package:mg_common_game/core/ui/screens/settings_screen.dart';
-import 'package:mg_common_game/core/ui/screens/statistics_screen.dart';
-import 'package:mg_common_game/core/ui/overlays/pause_game_overlay.dart';
-import 'package:mg_common_game/core/ui/overlays/settings_game_overlay.dart';
-import 'package:mg_common_game/l10n/extensions.dart';
-import 'ui/hud/mg_puzzle_hud.dart';
-import 'screens/collection_screen.dart';
-// import 'game/balancing_config.dart';
+import 'package:flutter/material.dart';
+import 'package:cafe_match_tycoon/game/level_design_config.dart';
+import 'package:cafe_match_tycoon/game/wave_spawn_table.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await _setupDI();
-  // ── Q7 DI Fix: Missing Systems ──────────────────────────
-  if (!GetIt.I.isRegistered<BattlePassManager>()) {
-    GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
-  }
-  if (!GetIt.I.isRegistered<GachaManager>()) {
-    GetIt.I.registerSingleton<GachaManager>(GachaManager());
-  }
-
-  runApp(const CafeMatchApp());
+void main() {
+  runApp(const MyApp());
 }
 
-Future<void> _setupDI() async {
-  // Register GoldManager only if not already registered
-  if (!GetIt.I.isRegistered<GoldManager>()) {
-    GetIt.I.registerSingleton<GoldManager>(GoldManager());
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  // Register AudioManager only if not already registered
-  if (!GetIt.I.isRegistered<AudioManager>()) {
-    final audioManager = AudioManager();
-    GetIt.I.registerSingleton<AudioManager>(audioManager);
-    audioManager.initialize();
-  }
-
-  // -- Meta Progression Registration FIRST (CafeManager depends on these) --
-
-  // 1. Progression Manager (Cafe Reputation / Level)
-  if (!GetIt.I.isRegistered<ProgressionManager>()) {
-    final progressionManager = ProgressionManager();
-    GetIt.I.registerSingleton(progressionManager);
-
-    // Haptic feedback on level up
-    progressionManager.onLevelUp = (newLevel) {
-      if (GetIt.I.isRegistered<SettingsManager>()) {
-        GetIt.I<SettingsManager>().triggerVibration(
-          intensity: VibrationIntensity.heavy,
-        );
-      }
-    };
-  }
-
-  // 2. Upgrade Manager - MUST be registered before CafeManager
-  if (!GetIt.I.isRegistered<UpgradeManager>()) {
-    final upgradeManager = UpgradeManager();
-
-    // Map existing Cafe upgrades to UpgradeManager
-    upgradeManager.registerUpgrade(
-      Upgrade(
-        id: 'chair_upgrade',
-        name: 'Comfy Chair',
-        description: 'Increase passive income per chair',
-        maxLevel: 20,
-        baseCost: 100,
-        costMultiplier: 1.4,
-        valuePerLevel: 1.0, // +1 G/sec maybe?
-      ),
-    );
-
-    upgradeManager.registerUpgrade(
-      Upgrade(
-        id: 'table_upgrade',
-        name: 'Fancy Table',
-        description: 'Increase gold capacity',
-        maxLevel: 20,
-        baseCost: 250,
-        costMultiplier: 1.4,
-        valuePerLevel: 100.0,
-      ),
-    );
-
-    GetIt.I.registerSingleton(upgradeManager);
-  }
-
-  // 3. Achievement Manager - also needed by CafeManager
-  if (!GetIt.I.isRegistered<AchievementManager>()) {
-    final achievementManager = AchievementManager();
-
-    achievementManager.registerAchievement(
-      Achievement(
-        id: 'cafe_level_5',
-        title: 'Rising Star',
-        description: 'Reach Cafe Level 5',
-        iconAsset: 'assets/images/icon_star.png', // Placeholder
-      ),
-    );
-
-    // Haptic feedback on achievement unlock
-    achievementManager.onAchievementUnlocked = (achievement) {
-      if (GetIt.I.isRegistered<SettingsManager>()) {
-        GetIt.I<SettingsManager>().triggerVibration(
-          intensity: VibrationIntensity.heavy,
-        );
-      }
-    };
-
-    GetIt.I.registerSingleton(achievementManager);
-  }
-
-  // Register other managers FIRST before CafeManager (which depends on them)
-  GetIt.I.registerSingleton<IdleIncomeManager>(IdleIncomeManager());
-  GetIt.I.registerSingleton<StageManager>(StageManager());
-  GetIt.I.registerSingleton<CustomerManager>(CustomerManager());
-
-  // NOW register CafeManager after all its dependencies
-  GetIt.I.registerSingleton<CafeManager>(CafeManager(goldManager: GetIt.I<GoldManager>()));
-
-  // 3. Achievement Manager
-  if (!GetIt.I.isRegistered<AchievementManager>()) {
-    final achievementManager = AchievementManager();
-
-    achievementManager.registerAchievement(
-      Achievement(
-        id: 'cafe_level_5',
-        title: 'Rising Star',
-        description: 'Reach Cafe Level 5',
-        iconAsset: 'assets/images/icon_star.png', // Placeholder
-      ),
-    );
-
-    // Haptic feedback on achievement unlock
-    achievementManager.onAchievementUnlocked = (achievement) {
-      if (GetIt.I.isRegistered<SettingsManager>()) {
-        GetIt.I<SettingsManager>().triggerVibration(
-          intensity: VibrationIntensity.heavy,
-        );
-      }
-    };
-
-    GetIt.I.registerSingleton(achievementManager);
-  }
-
-  // 4. Prestige Manager
-  if (!GetIt.I.isRegistered<PrestigeManager>()) {
-    final prestigeManager = PrestigeManager();
-
-    // Define Prestige Upgrades for Cafe Match-3
-    prestigeManager.registerPrestigeUpgrade(
-      PrestigeUpgrade(
-        id: 'prestige_xp_boost',
-        name: 'Reputation Boost',
-        description: '+20% reputation (XP) gain per level',
-        maxLevel: 10,
-        costPerLevel: 1,
-        bonusPerLevel: 0.2,
-      ),
-    );
-
-    prestigeManager.registerPrestigeUpgrade(
-      PrestigeUpgrade(
-        id: 'prestige_gold_income',
-        name: 'Passive Income Boost',
-        description: '+15% idle income per level',
-        maxLevel: 10,
-        costPerLevel: 1,
-        bonusPerLevel: 0.15,
-      ),
-    );
-
-    prestigeManager.registerPrestigeUpgrade(
-      PrestigeUpgrade(
-        id: 'prestige_match_gold',
-        name: 'Match Gold Multiplier',
-        description: '+10% gold from matches per level',
-        maxLevel: 15,
-        costPerLevel: 2,
-        bonusPerLevel: 0.1,
-      ),
-    );
-
-    GetIt.I.registerSingleton(prestigeManager);
-
-    // Load saved prestige data
-    prestigeManager.loadPrestigeData();
-
-    // Connect prestige manager to progression and gold managers
-    GetIt.I<ProgressionManager>().setPrestigeManager(prestigeManager);
-    GetIt.I<GoldManager>().setPrestigeManager(prestigeManager);
-  }
-
-  // 5. Daily Quest Manager
-  if (!GetIt.I.isRegistered<DailyQuestManager>()) {
-    final questManager = DailyQuestManager();
-
-    // Register daily quests for Cafe Match-3
-    questManager.registerQuest(
-      DailyQuest(
-        id: 'cafe_play_5_games',
-        title: 'Barista Training',
-        description: 'Complete 5 match-3 puzzles',
-        targetValue: 5,
-        goldReward: 100,
-        xpReward: 50,
-      ),
-    );
-
-    questManager.registerQuest(
-      DailyQuest(
-        id: 'cafe_make_50_matches',
-        title: 'Match Master',
-        description: 'Make 50 matches',
-        targetValue: 50,
-        goldReward: 150,
-        xpReward: 75,
-      ),
-    );
-
-    questManager.registerQuest(
-      DailyQuest(
-        id: 'cafe_earn_500_gold',
-        title: 'Cafe Tycoon',
-        description: 'Earn 500 gold',
-        targetValue: 500,
-        goldReward: 200,
-        xpReward: 100,
-      ),
-    );
-
-    questManager.registerQuest(
-      DailyQuest(
-        id: 'cafe_collect_3_stars',
-        title: 'Star Collector',
-        description: 'Collect 3 stars total',
-        targetValue: 3,
-        goldReward: 80,
-        xpReward: 40,
-      ),
-    );
-
-    questManager.registerQuest(
-      DailyQuest(
-        id: 'cafe_upgrade_furniture',
-        title: 'Interior Designer',
-        description: 'Upgrade furniture 2 times',
-        targetValue: 2,
-        goldReward: 120,
-        xpReward: 60,
-      ),
-    );
-
-    GetIt.I.registerSingleton(questManager);
-
-    // Load saved quest data and check for daily reset
-    questManager.loadQuestData();
-    questManager.checkAndResetIfNeeded();
-  }
-
-  // 6. Weekly Challenge Manager
-  if (!GetIt.I.isRegistered<WeeklyChallengeManager>()) {
-    final challengeManager = WeeklyChallengeManager();
-
-    // Haptic feedback on challenge completion
-    challengeManager.onChallengeCompleted = (challenge) {
-      if (GetIt.I.isRegistered<SettingsManager>()) {
-        GetIt.I<SettingsManager>().triggerVibration(
-          intensity: VibrationIntensity.heavy,
-        );
-      }
-    };
-
-    // Register weekly challenges for Cafe Match-3
-    challengeManager.registerChallenge(
-      WeeklyChallenge(
-        id: 'weekly_cafe_games_15',
-        title: 'Weekly Barista',
-        description: 'Complete 15 match-3 puzzles',
-        targetValue: 15,
-        goldReward: 500,
-        xpReward: 250,
-        tier: ChallengeTier.bronze,
-      ),
-    );
-
-    challengeManager.registerChallenge(
-      WeeklyChallenge(
-        id: 'weekly_cafe_matches_300',
-        title: 'Match Maestro',
-        description: 'Make 300 matches',
-        targetValue: 300,
-        goldReward: 750,
-        xpReward: 400,
-        tier: ChallengeTier.silver,
-      ),
-    );
-
-    challengeManager.registerChallenge(
-      WeeklyChallenge(
-        id: 'weekly_cafe_gold_3000',
-        title: 'Cafe Tycoon Elite',
-        description: 'Earn 3000 gold total',
-        targetValue: 3000,
-        goldReward: 1000,
-        xpReward: 500,
-        tier: ChallengeTier.silver,
-      ),
-    );
-
-    challengeManager.registerChallenge(
-      WeeklyChallenge(
-        id: 'weekly_cafe_upgrades_10',
-        title: 'Interior Master',
-        description: 'Purchase 10 upgrades',
-        targetValue: 10,
-        goldReward: 1500,
-        xpReward: 800,
-        prestigePointReward: 1,
-        tier: ChallengeTier.gold,
-      ),
-    );
-
-    challengeManager.registerChallenge(
-      WeeklyChallenge(
-        id: 'weekly_cafe_stars_25',
-        title: 'Star Collector Pro',
-        description: 'Collect 25 stars',
-        targetValue: 25,
-        goldReward: 800,
-        xpReward: 400,
-        tier: ChallengeTier.silver,
-      ),
-    );
-
-    challengeManager.registerChallenge(
-      WeeklyChallenge(
-        id: 'weekly_cafe_combo_50',
-        title: 'Combo Legend',
-        description: 'Achieve 50 combo matches',
-        targetValue: 50,
-        goldReward: 2000,
-        xpReward: 1000,
-        prestigePointReward: 2,
-        tier: ChallengeTier.platinum,
-      ),
-    );
-
-    GetIt.I.registerSingleton(challengeManager);
-
-    // Load saved challenge data and check for weekly reset
-    await challengeManager.loadChallengeData();
-    await challengeManager.checkAndResetIfNeeded();
-  }
-
-  // 7. Settings Manager
-  if (!GetIt.I.isRegistered<SettingsManager>()) {
-    final settingsManager = SettingsManager();
-    GetIt.I.registerSingleton(settingsManager);
-
-    // Connect to AudioManager
-    if (GetIt.I.isRegistered<AudioManager>()) {
-      settingsManager.setAudioManager(GetIt.I<AudioManager>());
-    }
-
-    // Load saved settings
-    settingsManager.loadSettings();
-  }
-
-  // 7. Statistics Manager
-  if (!GetIt.I.isRegistered<StatisticsManager>()) {
-    final statisticsManager = StatisticsManager();
-    GetIt.I.registerSingleton(statisticsManager);
-
-    // Load saved stats and start session
-    await statisticsManager.loadStats();
-    statisticsManager.startSession();
-  }
-
-  // 8. Save Manager - Centralized save/load system
-  await SaveManagerHelper.setupSaveManager(
-    autoSaveEnabled: true,
-    autoSaveIntervalSeconds: 30,
-  );
-
-  // Load legacy save data for backwards compatibility
-  await SaveManagerHelper.legacyLoadAll();
-}
-
-class CafeMatchApp extends StatelessWidget {
-  const CafeMatchApp({super.key});
+  static const gameId = 'MG-0004';
+  static const gameTitle = 'Cafe Match Tycoon';
+  static const coreFunLoop = kCoreFunLoop;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Cafe Match Tycoon',
-      theme: GameTheme.darkTheme,
-      routes: {
-        '/achievements': (_) => const AchievementScreen(),
-      },
-      home: const HomeScreen(),
+      title: gameTitle,
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF8E24AA),
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+      routes: {
+        '/game': (_) => const GameScreen(),
+        '/engine': (_) => const FrameLoopScreen(),
+        '/levels': (_) => const LevelRoadmapScreen(),
+        '/daily': (_) => const DailyHubScreen(),
+        '/retention': (_) => const RetentionHubScreen(),
+        '/guild-war': (_) => const GuildWarScreen(),
+        '/tournament': (_) => const TournamentScreen(),
+        '/seasonal-event': (_) => const SeasonalEventScreen(),
+      },
+      home: const MainMenuScreen(),
     );
   }
 }
 
-enum GameState { lobby, puzzle }
-
-class CafeMatchScreen extends StatefulWidget {
-  const CafeMatchScreen({super.key});
-
-  @override
-  State<CafeMatchScreen> createState() => _CafeMatchScreenState();
-}
-
-class _CafeMatchScreenState extends State<CafeMatchScreen> {
-  GameState _state = GameState.lobby;
-  final _cafeManager = GetIt.I<CafeManager>();
-  final _goldManager = GetIt.I<GoldManager>();
-  final _idleIncomeManager = GetIt.I<IdleIncomeManager>();
-  late Match3Game _game;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkOfflineReward();
-  }
-
-  /// 오프라인 보상 확인 및 표시
-  Future<void> _checkOfflineReward() async {
-    // 카페 레벨 계산
-    final cafeLevel = IdleIncomeManager.calculateCafeLevel(
-      _cafeManager.chairLevel,
-      _cafeManager.tableLevel,
-    );
-
-    // 오프라인 보상 계산
-    final reward = await _idleIncomeManager.calculateOfflineReward(cafeLevel);
-
-    // 보상이 있으면 골드 추가 및 다이얼로그 표시
-    if (reward.hasReward && mounted) {
-      _goldManager.addGold(reward.goldEarned);
-      OfflineRewardDialog.showIfHasReward(context, reward);
-    }
-  }
-
-  @override
-  void dispose() {
-    // 앱 종료 시 로그인 시간 저장
-    _idleIncomeManager.saveLoginTime();
-    super.dispose();
-  }
-
-  void _startGame() {
-    _game = Match3Game();
-    setState(() => _state = GameState.puzzle);
-  }
-
-  void _exitGame() {
-    setState(() => _state = GameState.lobby);
-  }
-
-  void _showPrestigeScreen(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PrestigeScreen(
-          prestigeManager: GetIt.I<PrestigeManager>(),
-          progressionManager: GetIt.I<ProgressionManager>(),
-          title: 'Cafe Prestige',
-          accentColor: AppColors.secondary,
-          onClose: () => Navigator.of(context).pop(),
-          onPrestige: () {
-            _performPrestige(context);
-          },
-        ),
-      ),
-    );
-  }
-
-  void _performPrestige(BuildContext context) {
-    final prestigeManager = GetIt.I<PrestigeManager>();
-    final progressionManager = GetIt.I<ProgressionManager>();
-
-    // Gain prestige points
-    final pointsGained = prestigeManager.performPrestige(
-      progressionManager.currentLevel,
-    );
-
-    // Reset progression
-    progressionManager.reset();
-
-    // Reset cafe-specific progress
-    _goldManager.trySpendGold(_goldManager.currentGold); // Clear all gold
-    _cafeManager.resetCafe(); // Reset cafe levels
-
-    Navigator.of(context).pop();
-
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Prestige successful! Gained $pointsGained prestige points!',
-        ),
-        backgroundColor: Colors.amber,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-
-    setState(() {}); // Refresh UI
-  }
-
-  void _showDailyQuestsScreen(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => DailyQuestScreen(
-          questManager: GetIt.I<DailyQuestManager>(),
-          title: 'Daily Quests',
-          accentColor: AppColors.secondary,
-          onClaimReward: (questId, goldReward, xpReward) {
-            // Give rewards
-            _goldManager.addGold(goldReward);
-            GetIt.I<ProgressionManager>().addXp(xpReward);
-          },
-          onClose: () => Navigator.of(context).pop(),
-        ),
-      ),
-    );
-  }
-
-  void _showWeeklyChallengesScreen(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => WeeklyChallengeScreen(
-          challengeManager: GetIt.I<WeeklyChallengeManager>(),
-          title: 'Weekly Challenges',
-          accentColor: Colors.amber,
-          onClaimReward: (challengeId, goldReward, xpReward, prestigeReward) {
-            // Give rewards
-            _goldManager.addGold(goldReward);
-            GetIt.I<ProgressionManager>().addXp(xpReward);
-            if (prestigeReward > 0) {
-              GetIt.I<PrestigeManager>().addPrestigePoints(prestigeReward);
-            }
-          },
-          onClose: () => Navigator.of(context).pop(),
-        ),
-      ),
-    );
-  }
-
-  void _showSettingsScreen(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => SettingsScreen(
-          settingsManager: GetIt.I<SettingsManager>(),
-          title: 'Settings',
-          accentColor: AppColors.secondary,
-          onClose: () => Navigator.of(context).pop(),
-          version: '1.0.0',
-        ),
-      ),
-    );
-  }
-
-  void _showStatisticsScreen(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => StatisticsScreen(
-          statisticsManager: GetIt.I<StatisticsManager>(),
-          progressionManager: GetIt.I<ProgressionManager>(),
-          prestigeManager: GetIt.I<PrestigeManager>(),
-          questManager: GetIt.I<DailyQuestManager>(),
-          achievementManager: GetIt.I<AchievementManager>(),
-          title: 'Statistics',
-          accentColor: AppColors.secondary,
-          onClose: () => Navigator.of(context).pop(),
-        ),
-      ),
-    );
-  }
+class MainMenuScreen extends StatelessWidget {
+  const MainMenuScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _state == GameState.lobby ? _buildLobby() : _buildPuzzle(),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(Icons.videogame_asset_rounded, size: 72),
+                  const SizedBox(height: 24),
+                  Text(
+                    MyApp.gameId,
+                    key: const ValueKey('game-id'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    MyApp.gameTitle,
+                    key: const ValueKey('game-title'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Core Fun: ${MyApp.coreFunLoop}',
+                    key: const ValueKey('core-fun-loop'),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  FilledButton.icon(
+                    key: const ValueKey('start-game'),
+                    onPressed: () => Navigator.of(context).pushNamed('/game'),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Start Game'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    key: const ValueKey('level-roadmap'),
+                    onPressed: () => Navigator.of(context).pushNamed('/levels'),
+                    icon: const Icon(Icons.map_rounded),
+                    label: const Text('Level Roadmap'),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: const [
+                      _MenuAction(
+                        route: '/engine',
+                        buttonKey: ValueKey('engine-loop'),
+                        icon: Icons.memory_rounded,
+                        label: 'Engine',
+                      ),
+                      _MenuAction(
+                        route: '/retention',
+                        buttonKey: ValueKey('rewards'),
+                        icon: Icons.card_giftcard_rounded,
+                        label: 'Rewards',
+                      ),
+                      _MenuAction(
+                        route: '/daily',
+                        buttonKey: ValueKey('daily-quests'),
+                        icon: Icons.today_rounded,
+                        label: 'Daily',
+                      ),
+                      _MenuAction(
+                        route: '/guild-war',
+                        buttonKey: ValueKey('guild-war'),
+                        icon: Icons.groups_rounded,
+                        label: 'Guild',
+                      ),
+                      _MenuAction(
+                        route: '/tournament',
+                        buttonKey: ValueKey('tournament'),
+                        icon: Icons.emoji_events_rounded,
+                        label: 'Tournament',
+                      ),
+                      _MenuAction(
+                        route: '/seasonal-event',
+                        buttonKey: ValueKey('seasonal-event'),
+                        icon: Icons.event_rounded,
+                        label: 'Event',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
+}
 
-  Widget _buildLobby() {
-    return AnimatedBuilder(
-      animation: _cafeManager,
-      builder: (context, _) {
-        return Container(
-          color: AppColors.background,
-          child: SafeArea(
+class _MenuAction extends StatelessWidget {
+  const _MenuAction({
+    required this.route,
+    required this.buttonKey,
+    required this.icon,
+    required this.label,
+  });
+
+  final String route;
+  final ValueKey<String> buttonKey;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 132,
+      child: OutlinedButton.icon(
+        key: buttonKey,
+        onPressed: () => Navigator.of(context).pushNamed(route),
+        icon: Icon(icon),
+        label: Text(label),
+      ),
+    );
+  }
+}
+
+class GameScreen extends StatefulWidget {
+  const GameScreen({super.key});
+
+  @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  int levelIndex = 0;
+  int goldBank = 0;
+  int xpBank = 0;
+
+  GameLevelDesign get currentLevel => kLevelDesign[levelIndex];
+
+  void completeAction() {
+    setState(() {
+      goldBank += currentLevel.goldReward;
+      xpBank += currentLevel.xpReward;
+      if (levelIndex < kLevelDesign.length - 1) {
+        levelIndex += 1;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final level = currentLevel;
+    final spawn = kWaveSpawnTable[levelIndex];
+    return Scaffold(
+      appBar: AppBar(title: const Text('Game Ready')),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'My Cafe',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textHighEmphasis,
-                        ),
-                      ),
-                      Text(
-                        'Gold: ${_goldManager.currentGold}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
+                Text(
+                  'Primary loop: ${MyApp.coreFunLoop}',
+                  key: const ValueKey('primary-loop'),
+                  textAlign: TextAlign.center,
                 ),
-
-                // Ingredients Display
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  color: Colors.black26,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: _cafeManager.ingredients.entries.map((entry) {
-                      return Column(
-                        children: [
-                          Icon(
-                            _getIngredientIcon(entry.key),
-                            color: MGColors.textHighEmphasis,
-                            size: 20,
-                          ),
-                          Text(
-                            '${entry.value}',
-                            style: const TextStyle(
-                              color: MGColors.textHighEmphasis,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
+                const SizedBox(height: 20),
+                Text(
+                  'Level ${level.levelIndex} - ${level.stage}',
+                  key: const ValueKey('level-name'),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-
-                // Cafe Info & Menus
-                Expanded(
-                  child: Row(
-                    children: [
-                      // Left: Stats
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.store,
-                              size: 80,
-                              color: Colors.white70,
-                            ),
-                            Text(
-                              'Lvl: ${_cafeManager.cafeReputationLevel}',
-                              style: const TextStyle(
-                                color: Colors.amber,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Chairs: ${_cafeManager.chairLevel}',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              'Tables: ${_cafeManager.tableLevel}',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () => _cafeManager.upgradeChair(),
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(100, 36),
-                              ),
-                              child: const Text('Upgrade Chair'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Right: Menu List
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          margin: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.black12,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.white12),
-                          ),
-                          child: ListView.builder(
-                            itemCount: _cafeManager.menus.length,
-                            itemBuilder: (context, index) {
-                              final menu = _cafeManager.menus[index];
-                              return ListTile(
-                                title: Text(
-                                  menu.name,
-                                  style: TextStyle(
-                                    color: menu.isUnlocked
-                                        ? MGColors.textHighEmphasis
-                                        : MGColors.common,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  menu.isUnlocked
-                                      ? 'Stock: ${menu.stock} | Price: ${menu.basePrice}G'
-                                      : 'Locked',
-                                  style: const TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                trailing: menu.isUnlocked
-                                    ? IconButton(
-                                        icon: const Icon(
-                                          Icons.coffee_maker,
-                                          color: Colors.amber,
-                                        ),
-                                        onPressed: () =>
-                                            _cafeManager.cookMenu(menu.id),
-                                      )
-                                    : IconButton(
-                                        icon: const Icon(
-                                          Icons.lock_open,
-                                          color: MGColors.common,
-                                        ),
-                                        onPressed: () =>
-                                            _cafeManager.unlockMenu(menu.id),
-                                      ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Objective: ${level.objective}',
+                  key: const ValueKey('level-objective'),
+                  textAlign: TextAlign.center,
                 ),
-
-                // Daily & Weekly Quests Row
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          backgroundColor: Colors.purple.shade700,
-                          foregroundColor: MGColors.textHighEmphasis,
-                        ),
-                        onPressed: () => _showDailyQuestsScreen(context),
-                        icon: const Icon(Icons.assignment_turned_in, size: 18),
-                        label: const Text(
-                          'DAILY',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          backgroundColor: Colors.amber.shade700,
-                          foregroundColor: Colors.black,
-                        ),
-                        onPressed: () => _showWeeklyChallengesScreen(context),
-                        icon: const Icon(Icons.emoji_events, size: 18),
-                        label: const Text(
-                          'WEEKLY',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Wave ${level.wave} | Difficulty ${level.difficulty.toStringAsFixed(2)}',
+                  key: const ValueKey('difficulty-label'),
+                  textAlign: TextAlign.center,
                 ),
-
-                // Settings & Stats Row
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          backgroundColor: Colors.grey.shade700,
-                          foregroundColor: MGColors.textHighEmphasis,
-                        ),
-                        onPressed: () => _showSettingsScreen(context),
-                        icon: const Icon(Icons.settings),
-                        label: const Text(
-                          'SETTINGS',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          backgroundColor: Colors.blue.shade700,
-                          foregroundColor: MGColors.textHighEmphasis,
-                        ),
-                        onPressed: () => _showStatisticsScreen(context),
-                        icon: const Icon(Icons.bar_chart),
-                        label: const Text(
-                          'STATS',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pressure: ${spawn.enemyCount} enemies every '
+                  '${spawn.spawnCadenceSeconds.toStringAsFixed(2)}s',
+                  key: const ValueKey('pressure-label'),
+                  textAlign: TextAlign.center,
                 ),
-
-                // Prestige Button
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
-                      ),
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: () => _showPrestigeScreen(context),
-                    icon: const Icon(Icons.star),
-                    label: const Text(
-                      'PRESTIGE',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: (level.levelIndex / kLevelDesign.length).clamp(0.0, 1.0),
                 ),
-
-                // Play Button
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 32.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 48,
-                        vertical: 16,
-                      ),
-                      backgroundColor: AppColors.primary,
-                    ),
-                    onPressed: _startGame,
-                    child: const Text(
-                      'PLAY MATCH-3',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textHighEmphasis,
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: 16),
+                Text(
+                  'Reward bank: $goldBank gold / $xpBank xp',
+                  key: const ValueKey('reward-bank'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  key: const ValueKey('complete-action'),
+                  onPressed: completeAction,
+                  icon: const Icon(Icons.check_circle_rounded),
+                  label: const Text('Complete Action'),
                 ),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPuzzle() {
-    return Stack(
-      children: [
-        // Game
-        Center(
-          child: AspectRatio(
-            aspectRatio: 1.0,
-            child: GameWidget(
-              game: _game,
-              overlayBuilderMap: {
-                'PauseGame': (BuildContext context, Match3Game game) {
-                  return PauseGameOverlay(
-                    game: game,
-                    onResume: () {
-                      game.resumeEngine();
-                      game.overlays.remove('PauseGame');
-                    },
-                    onSettings: () {
-                      game.overlays.add('SettingsGame');
-                    },
-                    onQuit: () {
-                      game.resumeEngine();
-                      _exitGame();
-                    },
-                  );
-                },
-                'SettingsGame': (BuildContext context, Match3Game game) {
-                  return SettingsGameOverlay(
-                    game: game,
-                    onBack: () {
-                      game.overlays.remove('SettingsGame');
-                    },
-                  );
-                },
-              },
-            ),
-          ),
         ),
-
-        // MG UI HUD Overlay
-        Builder(
-          builder: (context) {
-            return MGPuzzleHud(
-              gold: _goldManager.currentGold,
-              moves: 0, // 게임에서 moves 추적시 연결
-              score: 0, // 게임에서 score 추적시 연결
-              onPause: () {
-                _game.pauseEngine();
-                _game.overlays.add('PauseGame');
-              },
-              onHint: null, // 힌트 기능 구현시 연결
-              onDailyHub: () => Navigator.of(context).pushNamed('/daily-hub'),
-              onGuildWar: () {
-Navigator.of(context).pushNamed('/guild-war');
-              },
-              onTournament: () {
-Navigator.of(context).pushNamed('/tournament');
-              },
-              onSeasonalEvent: () {
-Navigator.of(context).pushNamed('/seasonal-event');
-              },
-            );
-          },
-        ),
-      ],
+      ),
     );
-  }
-
-  IconData _getIngredientIcon(String type) {
-    switch (type) {
-      case 'bean':
-        return Icons.circle; // Coffee Bean
-      case 'milk':
-        return Icons.local_drink;
-      case 'sugar':
-        return Icons.crop_square;
-      case 'cup':
-        return Icons.coffee;
-      case 'ice':
-        return Icons.ac_unit;
-      default:
-        return Icons.help_outline;
-    }
   }
 }
 
-void _registerCollections() {
-  final collection = GetIt.I<CollectionManager>();
+class _FrameLoopGame extends FlameGame {
+  double elapsedSeconds = 0;
+  int frameTicks = 0;
 
-  // Characters 컬렉션
-  collection.registerCollection(Collection(
-    id: 'characters',
-    name: '캐릭터',
-    description: '모든 캐릭터를 수집하세요',
-    items: [
-      CollectionItem(
-        id: 'char_warrior',
-        name: '전사',
-        description: '강인한 근접 전투 캐릭터',
-        rarity: CollectionRarity.common,
-      ),
-      CollectionItem(
-        id: 'char_mage',
-        name: '마법사',
-        description: '강력한 마법 공격 캐릭터',
-        rarity: CollectionRarity.rare,
-      ),
-      CollectionItem(
-        id: 'char_archer',
-        name: '궁수',
-        description: '원거리 정밀 공격 캐릭터',
-        rarity: CollectionRarity.rare,
-      ),
-      CollectionItem(
-        id: 'char_assassin',
-        name: '암살자',
-        description: '치명적인 은신 공격 캐릭터',
-        rarity: CollectionRarity.epic,
-      ),
-      CollectionItem(
-        id: 'char_healer',
-        name: '힐러',
-        description: '팀을 치유하는 지원 캐릭터',
-        rarity: CollectionRarity.legendary,
-      ),
-    ],
-    completionReward: CollectionReward(type: RewardType.gold, amount: 10000),
-    milestoneRewards: {
-      25: CollectionReward(type: RewardType.gold, amount: 1000),
-      50: CollectionReward(type: RewardType.gold, amount: 3000),
-      75: CollectionReward(type: RewardType.gold, amount: 5000),
-    },
-  ));
+  @override
+  void update(double dt) {
+    elapsedSeconds += dt;
+    frameTicks += 1;
+    super.update(dt);
+  }
+}
 
-  // 아이템 해제 콜백 (햅틱 피드백)
-  collection.onItemUnlocked = (collectionId, itemId) {
-    // SettingsManager가 등록되어 있으면 햅틱 피드백
-    debugPrint('Collection item unlocked: $collectionId / $itemId');
-  };
+class FrameLoopScreen extends StatelessWidget {
+  const FrameLoopScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Engine Loop')),
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'GameWidget frame loop is active for runtime input, update, and render validation.',
+              key: ValueKey('engine-loop-status'),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(child: GameWidget(game: _FrameLoopGame())),
+        ],
+      ),
+    );
+  }
+}
+
+class LevelRoadmapScreen extends StatelessWidget {
+  const LevelRoadmapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Level Roadmap')),
+      body: ListView.builder(
+        key: const ValueKey('level-list'),
+        padding: const EdgeInsets.all(16),
+        itemCount: kLevelDesign.length,
+        itemBuilder: (context, index) {
+          final level = kLevelDesign[index];
+          final spawn = kWaveSpawnTable[index];
+          return ListTile(
+            leading: CircleAvatar(child: Text('${level.levelIndex}')),
+            title: Text('Level ${level.levelIndex} - ${level.stage}'),
+            subtitle: Text(
+              'Wave ${level.wave} | difficulty ${level.difficulty.toStringAsFixed(2)} | '
+              '${spawn.enemyCount} enemies | reward ${level.goldReward}g/${level.xpReward}xp',
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class DailyHubScreen extends StatelessWidget {
+  const DailyHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Daily Quests',
+      detail: 'Short goals keep the fun loop moving.',
+      icon: Icons.today_rounded,
+    );
+  }
+}
+
+class RetentionHubScreen extends StatelessWidget {
+  const RetentionHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Rewards',
+      detail: 'Progression loop: return, claim, improve.',
+      icon: Icons.card_giftcard_rounded,
+    );
+  }
+}
+
+class GuildWarScreen extends StatelessWidget {
+  const GuildWarScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Guild War',
+      detail: 'Social competition is reachable from the main loop.',
+      icon: Icons.groups_rounded,
+    );
+  }
+}
+
+class TournamentScreen extends StatelessWidget {
+  const TournamentScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Tournament',
+      detail: 'Competitive goals are available for mastery.',
+      icon: Icons.emoji_events_rounded,
+    );
+  }
+}
+
+class SeasonalEventScreen extends StatelessWidget {
+  const SeasonalEventScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Seasonal Event',
+      detail: 'Timed content gives the loop a fresh reason to return.',
+      icon: Icons.event_rounded,
+    );
+  }
+}
+
+class _SimpleScreen extends StatelessWidget {
+  const _SimpleScreen({required this.title, required this.detail, required this.icon});
+
+  final String title;
+  final String detail;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 56),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                key: const ValueKey('screen-title'),
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(detail, key: const ValueKey('screen-detail'), textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
