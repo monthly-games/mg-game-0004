@@ -87,4 +87,9 @@ class BlockEntity extends SpriteComponent with TapCallbacks, HasGameReference {
   void onTapDown(TapDownEvent event) {
     onSelected(this);
   }
+
+  void updateSprite() {
+    // Reload sprite when type changes
+    onLoad();
+  }
 }

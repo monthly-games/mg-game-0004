@@ -25,6 +25,39 @@ class Match3Game extends FlameGame {
 
   BlockEntity? _selectedBlock;
 
+  // Combo System
+  int _comboCount = 0;
+  int get comboCount => _comboCount;
+  double get comboMultiplier {
+    if (_comboCount == 0) return 1.0;
+    return 1.0 + (_comboCount * 0.25); // 1.25x, 1.5x, 1.75x, etc.
+  }
+
+  // Skill Items System
+  int _hammerCount = 3;
+  int _colorChangeCount = 2;
+  SkillItemType? _activeSkill;
+
+  int get hammerCount => _hammerCount;
+  int get colorChangeCount => _colorChangeCount;
+  bool get hasActiveSkill => _activeSkill != null;
+
+  void useSkillItem(SkillItemType type) {
+    if (type == SkillItemType.hammer && _hammerCount > 0) {
+      _activeSkill = type;
+    } else if (type == SkillItemType.colorChange && _colorChangeCount > 0) {
+      _activeSkill = type;
+    }
+  }
+
+  void cancelSkill() {
+    _activeSkill = null;
+    if (_selectedBlock != null) {
+      _selectedBlock!.isSelected = false;
+      _selectedBlock = null;
+    }
+  }
+
   @override
   Color backgroundColor() => AppColors.background;
 
@@ -83,6 +116,12 @@ class Match3Game extends FlameGame {
   }
 
   void _onBlockSelected(BlockEntity block) {
+    // Handle skill item targeting
+    if (_activeSkill != null) {
+      _applySkillToBlock(block);
+      return;
+    }
+
     // GetIt.I<AudioManager>().playSfx('sfx_select.wav');
     if (_selectedBlock == null) {
       // Select first
@@ -146,7 +185,8 @@ class Match3Game extends FlameGame {
     final matches = _findMatches();
 
     if (matches.isNotEmpty) {
-      // Valid Swap
+      // Valid Swap - Reset combo for new player move
+      _comboCount = 0;
       await _processMatches(matches);
     } else {
       // Invalid Swap - Animate Back
@@ -235,6 +275,9 @@ class Match3Game extends FlameGame {
     int earnings = 0;
     Vector2 centerSum = Vector2.zero();
 
+    // Increment combo for cascade matches
+    _comboCount++;
+
     // Determine if we should spawn a special block
     BlockEntity? specialSpawnLocation;
     BlockType? specialSpawnType;
@@ -290,13 +333,16 @@ class Match3Game extends FlameGame {
     }
 
     if (earnings > 0) {
-      // ... (Economy logic same as before) ...
-      goldManager.addGold(earnings);
+      // Apply combo multiplier
+      final multiplier = comboMultiplier;
+      final finalEarnings = (earnings * multiplier).round();
+
+      goldManager.addGold(finalEarnings);
 
       // Award XP via CafeManager
       try {
         final cafeManager = GetIt.I<CafeManager>();
-        cafeManager.addStars(matches.length);
+        cafeManager.addStars((matches.length * multiplier).round());
 
         // Add Ingredients
         for (final block in matches) {
@@ -332,11 +378,24 @@ class Match3Game extends FlameGame {
       // Visual Feedback
       if (matches.isNotEmpty) {
         final center = centerSum / matches.length.toDouble();
+
+        // Show combo indicator if applicable
+        if (_comboCount > 1) {
+          add(
+            FloatingTextComponent(
+              text: 'x${multiplier.toStringAsFixed(1)} COMBO!',
+              position: center + Vector2(0, -30),
+              color: Colors.orange,
+              fontSize: 20,
+            ),
+          );
+        }
+
         add(
           FloatingTextComponent(
-            text: '+$earnings G',
+            text: '+$finalEarnings G',
             position: center,
-            color: Colors.amber,
+            color: multiplier > 1.0 ? Colors.orangeAccent : Colors.amber,
             fontSize: 24,
           ),
         );
@@ -352,6 +411,9 @@ class Match3Game extends FlameGame {
     if (newMatches.isNotEmpty) {
       await Future.delayed(const Duration(milliseconds: 200));
       await _processMatches(newMatches);
+    } else {
+      // Reset combo when no more cascades
+      _comboCount = 0;
     }
   }
 
@@ -445,4 +507,129 @@ class Match3Game extends FlameGame {
       startY + (y * tileSize) + tileSize / 2,
     );
   }
+
+  void _applySkillToBlock(BlockEntity block) {
+    if (_activeSkill == null) return;
+
+    try {
+      GetIt.I<AudioManager>().playSfx('sfx_skill.wav');
+    } catch (_) {}
+
+    if (_activeSkill == SkillItemType.hammer) {
+      // Hammer: Destroy single block
+      _hammerCount--;
+      _destroySingleBlock(block);
+    } else if (_activeSkill == SkillItemType.colorChange) {
+      // Color Change: Convert block type to a random ingredient
+      _colorChangeCount--;
+      _changeBlockType(block);
+    }
+
+    _activeSkill = null;
+  }
+
+  Future<void> _destroySingleBlock(BlockEntity block) async {
+    final goldManager = GetIt.I<GoldManager>();
+    final center = block.position;
+
+    // Remove from grid
+    _grid[block.gridY][block.gridX] = null;
+
+    // Award earnings
+    goldManager.addGold(5);
+
+    // Visual feedback
+    add(
+      FloatingTextComponent(
+        text: '+5 G',
+        position: center,
+        color: Colors.redAccent,
+        fontSize: 20,
+      ),
+    );
+
+    // Animate removal
+    block.add(
+      ScaleEffect.to(
+        Vector2.zero(),
+        EffectController(duration: 0.2, curve: Curves.easeIn),
+        onComplete: () => block.removeFromParent(),
+      ),
+    );
+
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    // Apply gravity to fill the gap
+    await _applyGravity();
+
+    // Check for new matches
+    final newMatches = _findMatches();
+    if (newMatches.isNotEmpty) {
+      _comboCount = 0; // Reset combo for skill-triggered matches
+      await _processMatches(newMatches);
+    }
+  }
+
+  Future<void> _changeBlockType(BlockEntity block) async {
+    // Get new random ingredient type (different from current)
+    final ingredientTypes = [
+      BlockType.bean,
+      BlockType.milk,
+      BlockType.sugar,
+      BlockType.cup,
+      BlockType.ice,
+    ];
+
+    final availableTypes = ingredientTypes.where((t) => t != block.type).toList();
+    final newType = availableTypes[_rng.nextInt(availableTypes.length)];
+
+    // Visual feedback
+    final center = block.position;
+    add(
+      FloatingTextComponent(
+        text: 'CHANGED!',
+        position: center + Vector2(0, -20),
+        color: Colors.purpleAccent,
+        fontSize: 16,
+      ),
+    );
+
+    // Replace the block with a new one of the desired type
+    _grid[block.gridY][block.gridX] = null;
+    block.removeFromParent();
+
+    final newBlock = BlockEntity(
+      type: newType,
+      gridX: block.gridX,
+      gridY: block.gridY,
+      onSelected: _onBlockSelected,
+      position: block.position,
+      size: block.size,
+    );
+
+    _grid[block.gridY][block.gridX] = newBlock;
+    add(newBlock);
+
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    // Check for new matches
+    final newMatches = _findMatches();
+    if (newMatches.isNotEmpty) {
+      _comboCount = 0; // Reset combo for skill-triggered matches
+      await _processMatches(newMatches);
+    }
+  }
+
+  void addSkillItem(SkillItemType type, int amount) {
+    if (type == SkillItemType.hammer) {
+      _hammerCount += amount;
+    } else if (type == SkillItemType.colorChange) {
+      _colorChangeCount += amount;
+    }
+  }
+}
+
+enum SkillItemType {
+  hammer,
+  colorChange,
 }
